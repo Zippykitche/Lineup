@@ -1,10 +1,10 @@
-const express = require('express');
-const cors = require('cors');
-const dotenv = require('dotenv');
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
 
-const authRoutes = require('./src/routes/authRoutes');
-const eventsRoutes = require('./src/routes/eventsRoutes');
-const usersRoutes = require('./src/routes/usersRoutes');
+import authRoutes from './src/routes/authRoutes.js';
+import eventsRoutes from './src/routes/eventsRoutes.js';
+import usersRoutes from './src/routes/usersRoutes.js';
 
 dotenv.config();
 

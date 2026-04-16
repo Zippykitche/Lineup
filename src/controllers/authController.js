@@ -1,8 +1,8 @@
 const { auth, db } = require('../config/firebase');
 
-// Super Admin creates a new user account
+// Super Admin creates a new user account (Registration form: name, email, department, role)
 const createUser = async (req, res) => {
-  const { email, password, full_name, role } = req.body;
+  const { email, password, full_name, department, role } = req.body;
 
   // Validate role
   const validRoles = ['super_admin', 'editor', 'assignee'];
@@ -13,9 +13,9 @@ const createUser = async (req, res) => {
   }
 
   // Validate all fields
-  if (!email || !password || !full_name || !role) {
+  if (!email || !password || !full_name || !department || !role) {
     return res.status(400).json({ 
-      message: 'All fields are required: email, password, full_name, role' 
+      message: 'All fields are required: email, password, full_name, department, role' 
     });
   }
 
@@ -35,13 +35,14 @@ const createUser = async (req, res) => {
       uid: userRecord.uid,
       email,
       full_name,
+      department,
       role,
       created_at: new Date().toISOString(),
       created_by: req.user.uid
     });
 
     res.status(201).json({ 
-      message: `User ${full_name} created successfully as ${role}`,
+      message: `User ${full_name} created successfully as ${role} in ${department}`,
       uid: userRecord.uid 
     });
   } catch (err) {

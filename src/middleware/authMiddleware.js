@@ -1,4 +1,4 @@
-const { auth } = require('../config/firebase');
+const { adminAuth } = require('../config/firebase');
 
 // Verify Firebase token on every protected request
 const protect = async (req, res, next) => {
@@ -12,7 +12,7 @@ const protect = async (req, res, next) => {
 
   try {
     // Verify token with Firebase
-    const decoded = await auth.verifyIdToken(token);
+    const decoded = await adminAuth.verifyIdToken(token);
     req.user = decoded;
     next();
   } catch (err) {
