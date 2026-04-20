@@ -1,0 +1,218 @@
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --font-size: 16px;
+  --background: #ffffff;
+  --foreground: #10123d;
+  --card: #ffffff;
+  --card-foreground: #10123d;
+  --popover: #ffffff;
+  --popover-foreground: #10123d;
+  --primary: #2e3192;
+  --primary-foreground: #ffffff;
+  --secondary: #e2e4f5;
+  --secondary-foreground: #2e3192;
+  --muted: #f0f1fa;
+  --muted-foreground: #8188c8;
+  --accent: #f0f1fa;
+  --accent-foreground: #2e3192;
+  --destructive: #ed1c24;
+  --destructive-foreground: #ffffff;
+  --border: #cbceea;
+  --input: transparent;
+  --input-background: #ffffff;
+  --switch-background: #cbced4;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --ring: #2e3192;
+  --chart-1: #2e3192;
+  --chart-2: #00a651;
+  --chart-3: #ed1c24;
+  --chart-4: #626ab4;
+  --chart-5: #41d582;
+  --radius: 0.625rem;
+  --sidebar: #f0f1fa;
+  --sidebar-foreground: #10123d;
+  --sidebar-primary: #2e3192;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e2e4f5;
+  --sidebar-accent-foreground: #2e3192;
+  --sidebar-border: #cbceea;
+  --sidebar-ring: #2e3192;
+}
+
+.dark {
+  --background: #10123d;
+  --foreground: #f0f1fa;
+  --card: #1a1c56;
+  --card-foreground: #f0f1fa;
+  --popover: #1a1c56;
+  --popover-foreground: #f0f1fa;
+  --primary: #626ab4;
+  --primary-foreground: #ffffff;
+  --secondary: #1f2168;
+  --secondary-foreground: #f0f1fa;
+  --muted: #1f2168;
+  --muted-foreground: #a8addb;
+  --accent: #1f2168;
+  --accent-foreground: #f0f1fa;
+  --destructive: #e44b4b;
+  --destructive-foreground: #ffffff;
+  --border: #26297e;
+  --input: #1a1c56;
+  --ring: #626ab4;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --chart-1: #626ab4;
+  --chart-2: #41d582;
+  --chart-3: #e44b4b;
+  --chart-4: #8188c8;
+  --chart-5: #7ee9ab;
+  --sidebar: #10123d;
+  --sidebar-foreground: #f0f1fa;
+  --sidebar-primary: #626ab4;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #1f2168;
+  --sidebar-accent-foreground: #f0f1fa;
+  --sidebar-border: #26297e;
+  --sidebar-ring: #626ab4;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* KBC Logo Custom Palette */
+  --color-blue-50: #f0f1fa;
+  --color-blue-100: #e2e4f5;
+  --color-blue-200: #cbceea;
+  --color-blue-300: #a8addb;
+  --color-blue-400: #8188c8;
+  --color-blue-500: #626ab4;
+  --color-blue-600: #2e3192;
+  --color-blue-700: #26297e;
+  --color-blue-800: #1f2168;
+  --color-blue-900: #1a1c56;
+  --color-blue-950: #10123d;
+
+  --color-red-50: #fef2f2;
+  --color-red-100: #fce7e7;
+  --color-red-200: #fad1d1;
+  --color-red-300: #f6a9a9;
+  --color-red-400: #ef7777;
+  --color-red-500: #e44b4b;
+  --color-red-600: #ed1c24;
+  --color-red-700: #b9151c;
+  --color-red-800: #99161c;
+  --color-red-900: #7f191f;
+  --color-red-950: #45080b;
+
+  --color-green-50: #effdf4;
+  --color-green-100: #d8fae5;
+  --color-green-200: #b4f3cd;
+  --color-green-300: #7ee9ab;
+  --color-green-400: #41d582;
+  --color-green-500: #1bbb62;
+  --color-green-600: #00a651;
+  --color-green-700: #0e7d41;
+  --color-green-800: #106336;
+  --color-green-900: #10522e;
+  --color-green-950: #082d19;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  /**
+  * Default typography styles for HTML elements (h1-h4, p, label, button, input).
+  * These are in @layer base, so Tailwind utility classes (like text-sm, text-lg) automatically override them.
+  */
+
+  html {
+    font-size: var(--font-size);
+  }
+
+  h1 {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h2 {
+    font-size: var(--text-xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h3 {
+    font-size: var(--text-lg);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h4 {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  label {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  button {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  input {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-normal);
+    line-height: 1.5;
+  }
+}
