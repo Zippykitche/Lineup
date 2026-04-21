@@ -1,37 +1,26 @@
-const { adminAuth } = require('../config/firebase');
+import { adminAuth } from "../config/firebase.js";
 
-// Verify Firebase token on every protected request
-const protect = async (req, res, next) => {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ message: 'Not authorized, no token provided' });
-  }
-
-  const token = authHeader.split(' ')[1];
-
+export const verifyToken = async (req, res, next) => {
   try {
-    // Verify token with Firebase
-    const decoded = await adminAuth.verifyIdToken(token);
-    req.user = decoded;
-    next();
-  } catch (err) {
-    return res.status(401).json({ message: 'Token invalid or expired' });
-  }
-};
+    const authHeader = req.headers.authorization;
 
-// Check user role from Firebase custom claims
-const requireRole = (...roles) => {
-  return (req, res, next) => {
-    const userRole = req.user.role;
-
-    if (!userRole || !roles.includes(userRole)) {
-      return res.status(403).json({ 
-        message: `Access denied. Required role: ${roles.join(' or ')}` 
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({
+        error: "No token provided",
       });
     }
-    next();
-  };
-};
 
-module.exports = { protect, requireRole };
+    const token = authHeader.split(" ")[1];
+
+    const decodedToken = await adminAuth.verifyIdToken(token);
+
+    req.user = decodedToken; // contains uid, email, etc
+
+    next();
+  } catch (error) {
+    console.error("AUTH ERROR:", error.message);
+    return res.status(401).json({
+      error: "Unauthorized",
+    });
+  }
+};

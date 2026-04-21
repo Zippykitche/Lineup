@@ -1,9 +1,9 @@
+import "dotenv/config";
 
 console.log("🚀 AUTH TEST STARTING...");
 
 import { adminAuth } from "./src/config/firebase.js";
-import { auth } from "./src/config/firebaseClient.js";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { loginUser as loginWithRest } from "./src/auth.js";
 
 // ============================
 // REGISTER (ADMIN SDK)
@@ -27,15 +27,15 @@ const registerUser = async (email, password) => {
 // ============================
 const loginUser = async (email, password) => {
   try {
-    const userCred = await signInWithEmailAndPassword(auth, email, password);
+    const user = await loginWithRest(email, password);
 
     console.log("✅ LOGIN SUCCESS:");
-    console.log("EMAIL:", userCred.user.email);
-    console.log("UID:", userCred.user.uid);
+    console.log("EMAIL:", user.email);
+    console.log("UID:", user.uid);
 
-    return userCred.user;
+    return user;
   } catch (err) {
-    console.error("❌ LOGIN ERROR:", err.message);
+    // Error logging handled by loginWithRest
   }
 };
 
@@ -50,7 +50,10 @@ const runTest = async () => {
   await registerUser(email, password);
 
   console.log("\nLogging in...");
-  await loginUser(email, password);
+  const loggedInUser = await loginUser(email, password);
+  if (loggedInUser) {
+    console.log("TOKEN:", loggedInUser.idToken);
+  }
 };
 
 runTest();

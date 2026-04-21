@@ -1,7 +1,7 @@
-const { db } = require('../config/firebase');
+import { db } from '../config/firebase.js';
 
 // Create event - Editor only
-const createEvent = async (req, res) => {
+export const createEvent = async (req, res) => {
   const { title, date, description, output_type, assignees } = req.body;
 
   const validOutputTypes = ['TV Package', 'Radio Script', 'Social Graphic', 'Web Article', 'Video', 'Photo'];
@@ -33,7 +33,7 @@ const createEvent = async (req, res) => {
 };
 
 // Get all events - Editor and Super Admin
-const getAllEvents = async (req, res) => {
+export const getAllEvents = async (req, res) => {
   try {
     const snapshot = await db.collection('events').orderBy('date').get();
     const events = snapshot.docs.map(doc => doc.data());
@@ -45,7 +45,7 @@ const getAllEvents = async (req, res) => {
 };
 
 // Get events assigned to logged in user - Assignee
-const getMyEvents = async (req, res) => {
+export const getMyEvents = async (req, res) => {
   try {
     const snapshot = await db.collection('events')
       .where('assignees', 'array-contains', req.user.uid)
@@ -61,7 +61,7 @@ const getMyEvents = async (req, res) => {
 };
 
 // Update event - Editor and Super Admin
-const updateEvent = async (req, res) => {
+export const updateEvent = async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -77,7 +77,7 @@ const updateEvent = async (req, res) => {
 };
 
 // Update status - Assignee can update their own tasks
-const updateStatus = async (req, res) => {
+export const updateStatus = async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
 
@@ -99,7 +99,7 @@ const updateStatus = async (req, res) => {
 };
 
 // Delete event - Super Admin only
-const deleteEvent = async (req, res) => {
+export const deleteEvent = async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -110,5 +110,3 @@ const deleteEvent = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
-
-module.exports = { createEvent, getAllEvents, getMyEvents, updateEvent, updateStatus, deleteEvent };

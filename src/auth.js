@@ -23,23 +23,41 @@ export const verifySession = async (idToken) => {
  * Sign in user using Firebase Auth REST API (for backend testing).
  */
 export const loginUser = async (email, password) => {
-  const API_KEY = process.env.FIREBASE_WEB_API_KEY;
-  const url = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${API_KEY}`;
-
   try {
+    const API_KEY = process.env.FIREBASE_WEB_API_KEY;
+
+    // 👇 Switch URL based on emulator
+    const baseUrl = process.env.USE_EMULATOR === "true"
+      ? "http://127.0.0.1:9099/identitytoolkit.googleapis.com/v1"
+      : "https://identitytoolkit.googleapis.com/v1";
+
+    const url = `${baseUrl}/accounts:signInWithPassword?key=${API_KEY}`;
+
     const response = await fetch(url, {
-      method: 'POST',
-      body: JSON.stringify({ email, password, returnSecureToken: true }),
-      headers: { 'Content-Type': 'application/json' },
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        password,
+        returnSecureToken: true,
+      }),
     });
 
     const data = await response.json();
-    if (data.error) throw new Error(data.error.message);
 
-    // Returns basic user info similar to client SDK
-    return { uid: data.localId, email: data.email, idToken: data.idToken };
+    if (data.error) {
+      throw new Error(data.error.message);
+    }
+
+    return {
+      uid: data.localId,
+      email: data.email,
+      idToken: data.idToken,
+    };
   } catch (error) {
-    console.error("Login error:", error.message);
+    console.error("❌ LOGIN ERROR:", error.message);
     return null;
   }
 };
