@@ -190,7 +190,7 @@ export function TeamPage() {
                     <Avatar className="w-16 h-16">
                       <AvatarFallback
                         className={`text-lg ${
-                          user.role === 'super_admin' ? 'bg-purple-600' : 'bg-blue-600'
+                          user.role === 'super_admin' ? 'bg-red-700' : 'bg-blue-600'
                         } text-white`}
                       >
                         {getInitials(user.fullName)}
