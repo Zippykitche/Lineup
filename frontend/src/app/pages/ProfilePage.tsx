@@ -51,7 +51,7 @@ export function ProfilePage() {
             <Avatar className="w-24 h-24">
               <AvatarFallback
                 className={`text-2xl ${
-                  currentUser.role === 'super_admin' ? 'bg-purple-600' : 'bg-blue-600'
+                  currentUser.role === 'super_admin' ? 'bg-red-700' : 'bg-blue-600'
                 } text-white`}
               >
                 {getInitials(currentUser.fullName)}

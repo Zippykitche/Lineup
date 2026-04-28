@@ -95,26 +95,28 @@ export function DashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {canCreateEvent && (
           <Button
-            onClick={() => setShowCreateEvent(true)}
-            className="h-auto py-4 justify-start"
-            variant="outline"
-          >
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Calendar className="w-5 h-5 text-blue-600" />
-              </div>
-              <div className="text-left">
-                <p className="font-medium">Create Event</p>
-                <p className="text-xs text-gray-600">Plan editorial coverage</p>
-              </div>
+          onClick={() => setShowCreateEvent(true)}
+          className="w-full h-auto justify-start py-4 whitespace-normal"
+          variant="outline"
+        >
+          <div className="flex w-full items-start gap-3">
+            <div className="shrink-0 rounded-lg bg-blue-100 p-2">
+              <Calendar className="w-5 h-5 text-blue-600" />
             </div>
-          </Button>
+            <div className="min-w-0 text-left">
+              <p className="font-medium">Create Event</p>
+              <p className="text-xs text-gray-600">
+                Plan editorial coverage
+              </p>
+            </div>
+          </div>
+        </Button>
         )}
 
         {canCreateTask && (
           <Button
             onClick={() => setShowCreateTask(true)}
-            className="h-auto py-4 justify-start"
+            className="w-full h-auto py-4 justify-start"
             variant="outline"
           >
             <div className="flex items-center gap-3">
@@ -131,7 +133,7 @@ export function DashboardPage() {
 
         <Button
           onClick={() => navigate('/calendar')}
-          className="h-auto py-4 justify-start"
+          className="w-full h-auto py-4 justify-start"
           variant="outline"
         >
           <div className="flex items-center gap-3">
@@ -147,7 +149,7 @@ export function DashboardPage() {
 
         <Button
           onClick={() => navigate('/team')}
-          className="h-auto py-4 justify-start"
+          className="w-full h-auto py-4 justify-start"
           variant="outline"
         >
           <div className="flex items-center gap-3">

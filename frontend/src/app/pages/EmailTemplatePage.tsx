@@ -55,7 +55,7 @@ export function EmailTemplatePage() {
               <a 
                 href="#"
                 onClick={(e) => e.preventDefault()}
-                className="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-800 text-white font-medium px-6 py-3 rounded-lg shadow-md transition-colors w-full sm:w-auto"
+                className="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-800text-white font-medium px-6 py-3 rounded-lg shadow-md transition-colors w-full sm:w-auto"
               >
                 Reset Password
                 <ArrowRight className="ml-2 w-4 h-4" />
