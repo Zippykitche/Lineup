@@ -22,6 +22,7 @@ export interface IApiAdapter {
   // Tasks
   getTasks(params?: QueryParams): Promise<PaginatedResponse<Task>>;
   getTaskById(id: string): Promise<ApiResponse<Task>>;
+  getMyTasks(params?: QueryParams): Promise<PaginatedResponse<Task>>;
   createTask(task: Partial<Task>): Promise<ApiResponse<Task>>;
   updateTask(id: string, task: Partial<Task>): Promise<ApiResponse<Task>>;
   deleteTask(id: string): Promise<ApiResponse<void>>;
@@ -29,4 +30,6 @@ export interface IApiAdapter {
   // Notifications
   getNotifications(params?: QueryParams): Promise<PaginatedResponse<Notification>>;
   markNotificationAsRead(id: string): Promise<ApiResponse<Notification>>;
+  markAllNotificationsAsRead(): Promise<ApiResponse<void>>;
+  deleteNotification(id: string): Promise<ApiResponse<void>>;
 }

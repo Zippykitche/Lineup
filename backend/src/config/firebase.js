@@ -22,7 +22,7 @@ if (process.env.USE_EMULATOR === "true") {
 // Load service account safely
 const serviceAccount = JSON.parse(
   fs.readFileSync(
-    path.join(__dirname, "../../firebase-service-account.json"),
+    path.join(__dirname, "../../../firebase-service-account.json"),
     "utf8"
   )
 );

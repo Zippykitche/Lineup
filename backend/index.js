@@ -5,6 +5,8 @@ import dotenv from 'dotenv';
 import authRoutes from './src/routes/authRoutes.js';
 import eventsRoutes from './src/routes/eventsRoutes.js';
 import usersRoutes from './src/routes/usersRoutes.js';
+import tasksRoutes from './src/routes/tasksRoutes.js';
+import notificationsRoutes from './src/routes/notificationsRoutes.js';
 
 dotenv.config();
 
@@ -20,6 +22,8 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/events', eventsRoutes);
 app.use('/api/users', usersRoutes);
+app.use('/api/tasks', tasksRoutes);
+app.use('/api/notifications', notificationsRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Lineup API is running' });

@@ -106,6 +106,11 @@ export class RestAdapter implements IApiAdapter {
     return this.request<ApiResponse<Task>>(`/tasks/${id}`);
   }
 
+  async getMyTasks(params?: QueryParams): Promise<PaginatedResponse<Task>> {
+    const query = new URLSearchParams(params as any).toString();
+    return this.request<PaginatedResponse<Task>>(`/tasks/my-tasks?${query}`);
+  }
+
   async createTask(task: Partial<Task>): Promise<ApiResponse<Task>> {
     return this.request<ApiResponse<Task>>('/tasks', {
       method: 'POST',
@@ -131,6 +136,14 @@ export class RestAdapter implements IApiAdapter {
   }
 
   async markNotificationAsRead(id: string): Promise<ApiResponse<Notification>> {
-    return this.request<ApiResponse<Notification>>(`/notifications/${id}/read`, { method: 'POST' });
+    return this.request<ApiResponse<Notification>>(`/notifications/${id}/read`, { method: 'PATCH' });
+  }
+
+  async markAllNotificationsAsRead(): Promise<ApiResponse<void>> {
+    return this.request<ApiResponse<void>>('/notifications/read-all', { method: 'PATCH' });
+  }
+
+  async deleteNotification(id: string): Promise<ApiResponse<void>> {
+    return this.request<ApiResponse<void>>(`/notifications/${id}`, { method: 'DELETE' });
   }
 }
