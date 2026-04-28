@@ -4,7 +4,7 @@ import { MockAdapter } from './adapters/mockAdapter';
 import { RestAdapter } from './adapters/restAdapter';
 import { FirebaseAdapter } from './adapters/firebaseAdapter';
 
-const API_MODE = (import.meta.env.NEXT_PUBLIC_API_MODE || 'mock') as ApiMode;
+const API_MODE = (import.meta.env.NEXT_PUBLIC_API_MODE || 'rest') as ApiMode;
 const API_BASE_URL = import.meta.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000/api';
 const FIREBASE_CONFIG = {
   apiKey: import.meta.env.NEXT_PUBLIC_FIREBASE_API_KEY,

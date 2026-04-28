@@ -182,6 +182,44 @@ export class MockAdapter implements IApiAdapter {
     return { data: mockDb.notifications[index], status: 200 };
   }
 
+  async getMyTasks(params?: QueryParams): Promise<PaginatedResponse<Task>> {
+  await sleep(DELAY);
+
+  // Mock current logged-in user
+  const currentUser = mockDb.users[0];
+
+  let data = mockDb.tasks.filter(
+    (task) => task.assigneeId === currentUser.id
+  );
+
+  if (params?.status) {
+    data = data.filter((task) => task.status === params.status);
+  }
+
+  return this.paginate(data, params);
+}
+
+async markAllNotificationsAsRead(): Promise<ApiResponse<void>> {
+  await sleep(DELAY / 4);
+
+  mockDb.notifications = mockDb.notifications.map((notification) => ({
+    ...notification,
+    read: true,
+  }));
+
+  return { data: undefined, status: 200 };
+}
+
+async deleteNotification(id: string): Promise<ApiResponse<void>> {
+  await sleep(DELAY / 4);
+
+  mockDb.notifications = mockDb.notifications.filter(
+    (notification) => notification.id !== id
+  );
+
+  return { data: undefined, status: 204 };
+}
+
   // --- Helper ---
   private paginate<T>(data: T[], params?: QueryParams): PaginatedResponse<T> {
     const page = params?.page || 1;

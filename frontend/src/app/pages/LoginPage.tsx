@@ -28,10 +28,8 @@ export function LoginPage() {
 
     setIsLoading(true);
 
-    // Simulate network delay
-    setTimeout(() => {
-      // Passwords are not strictly checked in demo, just email
-      const success = login(email);
+    try {
+      const success = await login(email, password);
 
       if (success) {
         navigate('/dashboard');
@@ -39,7 +37,10 @@ export function LoginPage() {
         setError('Invalid email or password. Please try again or use a demo account.');
         setIsLoading(false);
       }
-    }, 800);
+    } catch (err) {
+      setError('An unexpected error occurred. Please try again.');
+      setIsLoading(false);
+    }
   };
 
   const handleForgotPassword = (e: React.FormEvent) => {

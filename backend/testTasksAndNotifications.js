@@ -1,7 +1,7 @@
 import fetch from 'node-fetch';
 import 'dotenv/config';
-import { adminAuth } from './backend/src/config/firebase.js';
-import { loginUser } from './backend/src/auth.js';
+import { adminAuth } from './src/config/firebase.js';
+import { loginUser } from './src/auth.js';
 
 const BASE_URL = 'http://localhost:5000/api';
 

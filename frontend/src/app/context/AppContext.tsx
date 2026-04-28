@@ -6,12 +6,7 @@ import {
   ReactNode,
 } from "react";
 import { User, Event, Task, Notification } from "../types";
-import {
-  mockUsers,
-  mockEvents,
-  mockTasks,
-  mockNotifications,
-} from "../data/mockData";
+import { api } from "../../api";
 
 interface AppContextType {
   currentUser: User | null;
@@ -19,175 +14,139 @@ interface AppContextType {
   events: Event[];
   tasks: Task[];
   notifications: Notification[];
-  register: (newUser: User) => void;
-  login: (email: string, role?: string) => boolean;
+  isLoading: boolean;
+  login: (email: string, password?: string) => Promise<boolean>;
   logout: () => void;
-  addEvent: (event: Omit<Event, "id">) => void;
-  updateEvent: (id: string, event: Partial<Event>) => void;
-  deleteEvent: (id: string) => void;
-  addTask: (task: Omit<Task, "id">) => void;
-  updateTask: (id: string, task: Partial<Task>) => void;
-  deleteTask: (id: string) => void;
-  markNotificationAsRead: (id: string) => void;
-  addNotification: (
-    notification: Omit<Notification, "id" | "createdAt" | "read">
-  ) => void;
+  addEvent: (event: Omit<Event, "id">) => Promise<void>;
+  updateEvent: (id: string, event: Partial<Event>) => Promise<void>;
+  deleteEvent: (id: string) => Promise<void>;
+  addTask: (task: Omit<Task, "id">) => Promise<void>;
+  updateTask: (id: string, task: Partial<Task>) => Promise<void>;
+  deleteTask: (id: string) => Promise<void>;
+  markNotificationAsRead: (id: string) => Promise<void>;
+  markAllNotificationsAsRead: () => Promise<void>;
+  refreshData: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [events, setEvents] = useState<Event[]>(() => {
-  const storedEvents = localStorage.getItem('kbc-events');
-  return storedEvents ? JSON.parse(storedEvents) : mockEvents;
-});
+  const [users, setUsers] = useState<User[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-const [tasks, setTasks] = useState<Task[]>(() => {
-  const storedTasks = localStorage.getItem('kbc-tasks');
-  return storedTasks ? JSON.parse(storedTasks) : mockTasks;
-});
+  const refreshData = async () => {
+    if (!currentUser) return;
+    
+    setIsLoading(true);
+    try {
+      const [usersRes, eventsRes, tasksRes, notifsRes] = await Promise.all([
+        api.getUsers(),
+        api.getEvents(),
+        currentUser.role === 'assignee' ? api.getMyTasks() : api.getTasks(),
+        api.getNotifications()
+      ]);
 
-const [notifications, setNotifications] = useState<Notification[]>(() => {
-  const storedNotifications = localStorage.getItem('kbc-notifications');
-  return storedNotifications ? JSON.parse(storedNotifications) : mockNotifications;
-});
-  const [users, setUsers] = useState<User[]>(() => {
-    const storedUsers = localStorage.getItem("kbc-users");
-    return storedUsers ? JSON.parse(storedUsers) : mockUsers;
-  });
+      setUsers(usersRes.data);
+      setEvents(eventsRes.data);
+      setTasks(tasksRes.data);
+      setNotifications(notifsRes.data);
+    } catch (error) {
+      console.error("Failed to refresh data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("kbc-current-user");
-    if (storedUser) {
-      setCurrentUser(JSON.parse(storedUser));
-    }
+    const initAuth = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const user = await api.getCurrentUser();
+          if (user) {
+            setCurrentUser(user);
+          } else {
+            localStorage.removeItem('token');
+          }
+        } catch (error) {
+          localStorage.removeItem('token');
+        }
+      }
+      setIsLoading(false);
+    };
+    initAuth();
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("kbc-users", JSON.stringify(users));
-  }, [users]);
-
-  useEffect(() => {
-  localStorage.setItem('kbc-events', JSON.stringify(events));
-}, [events]);
-
-useEffect(() => {
-  localStorage.setItem('kbc-tasks', JSON.stringify(tasks));
-}, [tasks]);
-
-useEffect(() => {
-  localStorage.setItem('kbc-notifications', JSON.stringify(notifications));
-}, [notifications]);
-
-  const register = (newUser: User) => {
-    setUsers((prev) => [...prev, newUser]);
-  };
-
-  const login = (email: string, role?: string): boolean => {
-    const normalizedEmail = email.trim().toLowerCase();
-
-    const user = users.find(
-      (u) => u.workEmail.trim().toLowerCase() === normalizedEmail
-    );
-
-    if (!user) return false;
-
-    if (role && user.role !== role) {
-      return false;
+    if (currentUser) {
+      refreshData();
     }
+  }, [currentUser]);
 
-    setCurrentUser(user);
-    localStorage.setItem("kbc-current-user", JSON.stringify(user));
-    return true;
+  const login = async (email: string, password = "password"): Promise<boolean> => {
+    try {
+      setIsLoading(true);
+      const response = await api.login(email, password);
+      setCurrentUser(response.user);
+      return true;
+    } catch (error) {
+      console.error("Login failed:", error);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const logout = () => {
+    api.logout();
     setCurrentUser(null);
-    localStorage.removeItem("kbc-current-user");
+    setEvents([]);
+    setTasks([]);
+    setNotifications([]);
   };
 
-  const addEvent = (event: Omit<Event, "id">) => {
-    const newEvent: Event = {
-      ...event,
-      id: `e${Date.now()}`,
-    };
-
-    setEvents((prev) => [...prev, newEvent]);
-
-    event.attendeeIds.forEach((userId) => {
-      const eventDate = new Date(event.date);
-      const formattedDate = eventDate.toLocaleDateString("en-US", {
-        month: "long",
-        day: "numeric",
-      });
-
-      addNotification({
-        userId,
-        message: `You were added to an event on ${formattedDate} at ${event.startTime}: ${event.title}`,
-        type: "meeting",
-      });
-    });
+  const addEvent = async (event: Omit<Event, "id">) => {
+    await api.createEvent(event);
+    await refreshData();
   };
 
-  const updateEvent = (id: string, eventUpdate: Partial<Event>) => {
-    setEvents((prev) =>
-      prev.map((event) =>
-        event.id === id ? { ...event, ...eventUpdate } : event
-      )
-    );
+  const updateEvent = async (id: string, eventUpdate: Partial<Event>) => {
+    await api.updateEvent(id, eventUpdate);
+    await refreshData();
   };
 
-  const deleteEvent = (id: string) => {
-    setEvents((prev) => prev.filter((event) => event.id !== id));
+  const deleteEvent = async (id: string) => {
+    await api.deleteEvent(id);
+    await refreshData();
   };
 
-  const addTask = (task: Omit<Task, "id">) => {
-    const newTask: Task = {
-      ...task,
-      id: `t${Date.now()}`,
-    };
-
-    setTasks((prev) => [...prev, newTask]);
-
-    addNotification({
-      userId: task.assigneeId,
-      message: `You were assigned a new task: ${task.title}`,
-      type: "task",
-    });
+  const addTask = async (task: Omit<Task, "id">) => {
+    await api.createTask(task);
+    await refreshData();
   };
 
-  const updateTask = (id: string, taskUpdate: Partial<Task>) => {
-    setTasks((prev) =>
-      prev.map((task) =>
-        task.id === id ? { ...task, ...taskUpdate } : task
-      )
-    );
+  const updateTask = async (id: string, taskUpdate: Partial<Task>) => {
+    await api.updateTask(id, taskUpdate);
+    await refreshData();
   };
 
-  const deleteTask = (id: string) => {
-    setTasks((prev) => prev.filter((task) => task.id !== id));
+  const deleteTask = async (id: string) => {
+    await api.deleteTask(id);
+    await refreshData();
   };
 
-  const markNotificationAsRead = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((notif) =>
-        notif.id === id ? { ...notif, read: true } : notif
-      )
-    );
+  const markNotificationAsRead = async (id: string) => {
+    await api.markNotificationAsRead(id);
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
   };
 
-  const addNotification = (
-    notification: Omit<Notification, "id" | "createdAt" | "read">
-  ) => {
-    const newNotification: Notification = {
-      ...notification,
-      id: `n${Date.now()}`,
-      createdAt: new Date().toISOString(),
-      read: false,
-    };
-
-    setNotifications((prev) => [newNotification, ...prev]);
+  const markAllNotificationsAsRead = async () => {
+    await api.markAllNotificationsAsRead();
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
   };
 
   return (
@@ -198,7 +157,7 @@ useEffect(() => {
         events,
         tasks,
         notifications,
-        register,
+        isLoading,
         login,
         logout,
         addEvent,
@@ -208,7 +167,8 @@ useEffect(() => {
         updateTask,
         deleteTask,
         markNotificationAsRead,
-        addNotification,
+        markAllNotificationsAsRead,
+        refreshData,
       }}
     >
       {children}

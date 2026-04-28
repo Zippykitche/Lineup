@@ -1,32 +1,5 @@
-# Dependencies
-node_modules
-
-# Environment
+node_modules/
 .env
-
-# Firebase
 firebase-service-account.json
-firebase-debug.log
 firestore-debug.log
-ui-debug.log
-.firebaserc
-
-# Firebase emulator data
-.firebase/
-
-# Agent skills (auto-generated)
 .agents/
-
-# Logs
-*.log
-
-# Test files (not needed in production)
-testAuth.js
-testRoles.js
-testEvents.js
-testProtectedRoutes.js
-seedAdmin.js
-
-# Misc
-skills-lock.json
-requestClient.js
