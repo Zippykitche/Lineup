@@ -6,10 +6,10 @@ export function EmailTemplatePage() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f3f3f5] p-4 font-sans text-[#10123d] relative">
+    <div className="min-h-screen flex items-center justify-center bg-[#f3f3f5] p-4 font-sans text-blue-950 relative">
       <button 
         onClick={() => navigate('/')}
-        className="absolute top-4 left-4 flex items-center gap-2 text-sm text-[#2e3192] hover:text-[#1f2168] bg-white px-4 py-2 rounded-lg shadow-sm border border-blue-100 transition-colors font-medium"
+        className="absolute top-4 left-4 flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 bg-white px-4 py-2 rounded-lg shadow-sm border border-blue-100 transition-colors font-medium"
       >
         <ArrowLeft className="w-4 h-4" />
         Back to Login
@@ -18,7 +18,7 @@ export function EmailTemplatePage() {
       <div className="max-w-xl w-full pt-12 sm:pt-0">
         {/* Helper Note for the preview */}
         <div className="mb-6 bg-white/80 p-4 rounded-xl border border-blue-200 shadow-sm flex items-start gap-3 backdrop-blur-sm">
-          <Info className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+          <Info className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
           <p className="text-sm text-slate-600 leading-relaxed">
             <strong className="text-slate-800">Email Template Mockup:</strong> This page demonstrates how the password reset email will look when sent to staff members via Firebase Authentication. 
           </p>
@@ -28,7 +28,7 @@ export function EmailTemplatePage() {
         <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
           
           {/* Header */}
-          <div className="bg-[#f0f1fa] px-8 py-6 text-center border-b border-[#cbceea]">
+          <div className="bg-blue-50 px-8 py-6 text-center border-b border-blue-200">
             <img 
               src={logo} 
               alt="KBC Logo" 
@@ -38,7 +38,7 @@ export function EmailTemplatePage() {
 
           {/* Body */}
           <div className="px-8 py-10">
-            <h1 className="text-2xl font-bold text-[#10123d] mb-6">
+            <h1 className="text-2xl font-bold text-blue-950 mb-6">
               Reset your Lineup password
             </h1>
             
@@ -55,7 +55,7 @@ export function EmailTemplatePage() {
               <a 
                 href="#"
                 onClick={(e) => e.preventDefault()}
-                className="inline-flex items-center justify-center bg-[#2e3192] hover:bg-[#1f2168] text-white font-medium px-6 py-3 rounded-lg shadow-md transition-colors w-full sm:w-auto"
+                className="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-800 text-white font-medium px-6 py-3 rounded-lg shadow-md transition-colors w-full sm:w-auto"
               >
                 Reset Password
                 <ArrowRight className="ml-2 w-4 h-4" />
@@ -83,11 +83,11 @@ export function EmailTemplatePage() {
           </div>
 
           {/* Footer */}
-          <div className="bg-[#10123d] px-8 py-6 text-center">
-            <p className="text-[#a8addb] text-xs leading-relaxed mb-2">
+          <div className="bg-blue-950 px-8 py-6 text-center">
+            <p className="text-blue-300 text-xs leading-relaxed mb-2">
               This is an automated message from the KBC Lineup Editorial System. Please do not reply to this email.
             </p>
-            <p className="text-[#626ab4] text-xs">
+            <p className="text-blue-500 text-xs">
               © 2026 KBC. All rights reserved.
             </p>
           </div>
