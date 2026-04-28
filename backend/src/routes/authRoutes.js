@@ -1,12 +1,14 @@
 import express from 'express';
 import axios from 'axios';
+import { adminAuth as auth } from '../config/firebase.js';
 import {
-  createUser, 
-  getMe, 
-  getAllUsers, 
-  updateUserRole, 
+  createUser,
+  getMe,
+  getAllUsers,
+  updateUserRole,
   deleteUser,
-  forgotPassword
+  forgotPassword,
+  logout,
 } from '../controllers/authController.js'; // Ensure .js extension for ESM
 import { verifyToken } from '../middleware/authMiddleware.js'; // Renamed from protect
 import { requireRole } from '../middleware/roleMiddleware.js'; // Import requireRole
@@ -66,6 +68,7 @@ router.post('/forgot-password', forgotPassword);
 
 // Protected routes
 router.get('/me', verifyToken, getMe);
+router.post('/logout', verifyToken, logout);
 
 // Super Admin only routes
 router.post('/create-user', verifyToken, requireRole(['super_admin']), createUser); // Use array for roles

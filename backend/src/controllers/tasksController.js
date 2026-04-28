@@ -132,7 +132,7 @@ export const deleteTaskHandler = async (req, res) => {
       return res.status(500).json({ message: 'Failed to delete task' });
     }
 
-    res.json({ message: 'Task deleted successfully', status: 200 });
+    res.json({ data: null, message: 'Task deleted successfully', status: 200 });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
