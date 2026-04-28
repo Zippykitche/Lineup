@@ -1,37 +1,63 @@
 import { adminAuth as auth, db } from '../config/firebase.js';
 
+const normalizeUser = (userDoc) => {
+  if (!userDoc) return null;
+
+  return {
+    id: userDoc.uid || userDoc.id || null,
+    fullName: userDoc.fullName || userDoc.full_name || userDoc.displayName || null,
+    workEmail: userDoc.workEmail || userDoc.email || null,
+    role: userDoc.role || null,
+    department: userDoc.department || null,
+    phone: userDoc.phone || null,
+    createdAt: userDoc.createdAt || userDoc.created_at || null,
+    updatedAt: userDoc.updatedAt || userDoc.updated_at || null,
+    createdBy: userDoc.createdBy || userDoc.created_by || null,
+  };
+};
+
 // Register user with role - Super Admin only
 export const createUser = async (req, res) => {
-  const { email, password, full_name, role } = req.body;
+  const { email, password, fullName, full_name, role, department, phone } = req.body;
+  const name = fullName || full_name;
 
   const validRoles = ['super_admin', 'editor', 'assignee'];
   if (!validRoles.includes(role)) {
     return res.status(400).json({ message: 'Invalid role. Must be: super_admin, editor or assignee' });
   }
 
-  if (!email || !password || !full_name || !role) {
-    return res.status(400).json({ message: 'All fields are required: email, password, full_name, role' });
+  if (!email || !password || !name || !role) {
+    return res.status(400).json({ message: 'All fields are required: email, password, fullName, role' });
   }
 
   try {
-    const userRecord = await auth.createUser({ email, password, displayName: full_name });
+    const userRecord = await auth.createUser({ email, password, displayName: name });
 
     await auth.setCustomUserClaims(userRecord.uid, { role });
 
-    await db.collection('users').doc(userRecord.uid).set({
+    const userDoc = {
       uid: userRecord.uid,
-      email,
-      full_name,
+      workEmail: email,
+      fullName: name,
       role,
-      created_at: new Date().toISOString(),
-      created_by: req.user.uid
-    });
+      department: department || null,
+      phone: phone || null,
+      createdAt: new Date().toISOString(),
+      createdBy: req.user.uid,
+    };
 
-    res.status(201).json({ message: `User ${full_name} created successfully`, uid: userRecord.uid });
+    await db.collection('users').doc(userRecord.uid).set(userDoc);
+
+    res.status(201).json({ data: normalizeUser(userDoc), message: `User ${name} created successfully`, status: 201 });
   } catch (err) {
     console.error('Create user error:', err);
     res.status(500).json({ message: err.message });
   }
+};
+
+export const logout = async (req, res) => {
+  // Logout is a no-op on backend because tokens are stateless.
+  res.json({ data: null, message: 'Logged out successfully', status: 200 });
 };
 
 // Get logged in user profile
@@ -43,7 +69,7 @@ export const getMe = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    res.json(userDoc.data());
+    res.json({ data: normalizeUser(userDoc.data()), status: 200 });
   } catch (err) {
     console.error('Get me error:', err);
     res.status(500).json({ message: 'Server error' });
@@ -53,9 +79,9 @@ export const getMe = async (req, res) => {
 // Get all users - Super Admin only
 export const getAllUsers = async (req, res) => {
   try {
-    const snapshot = await db.collection('users').orderBy('created_at').get();
-    const users = snapshot.docs.map(doc => doc.data());
-    res.json(users);
+    const snapshot = await db.collection('users').orderBy('createdAt').get();
+    const users = snapshot.docs.map(doc => normalizeUser(doc.data()));
+    res.json({ data: users, status: 200 });
   } catch (err) {
     console.error('Get all users error:', err);
     res.status(500).json({ message: 'Server error' });
@@ -74,8 +100,8 @@ export const updateUserRole = async (req, res) => {
 
   try {
     await auth.setCustomUserClaims(uid, { role });
-    await db.collection('users').doc(uid).update({ role, updated_at: new Date().toISOString() });
-    res.json({ message: 'Role updated successfully' });
+    await db.collection('users').doc(uid).update({ role, updatedAt: new Date().toISOString() });
+    res.json({ data: { uid, role }, message: 'Role updated successfully', status: 200 });
   } catch (err) {
     console.error('Update role error:', err);
     res.status(500).json({ message: 'Server error' });
@@ -89,7 +115,7 @@ export const deleteUser = async (req, res) => {
   try {
     await auth.deleteUser(uid);
     await db.collection('users').doc(uid).delete();
-    res.json({ message: 'User deleted successfully' });
+    res.json({ data: null, message: 'User deleted successfully', status: 200 });
   } catch (err) {
     console.error('Delete user error:', err);
     res.status(500).json({ message: 'Server error' });
@@ -106,7 +132,7 @@ export const forgotPassword = async (req, res) => {
 
   try {
     await auth.generatePasswordResetLink(email);
-    res.json({ message: 'Password reset email sent successfully' });
+    res.json({ data: null, message: 'Password reset email sent successfully', status: 200 });
   } catch (err) {
     console.error('Forgot password error:', err);
     res.status(500).json({ message: 'Failed to send reset email' });

@@ -83,7 +83,7 @@ export const markAsRead = async (req, res) => {
       return res.status(500).json({ message: 'Failed to mark notification as read' });
     }
 
-    res.json({ message: 'Notification marked as read', status: 200 });
+    res.json({ data: null, message: 'Notification marked as read', status: 200 });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
@@ -99,7 +99,7 @@ export const markAllAsRead = async (req, res) => {
       return res.status(500).json({ message: 'Failed to mark notifications as read' });
     }
 
-    res.json({ message: 'All notifications marked as read', status: 200 });
+    res.json({ data: null, message: 'All notifications marked as read', status: 200 });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
@@ -117,7 +117,7 @@ export const deleteNotificationHandler = async (req, res) => {
       return res.status(500).json({ message: 'Failed to delete notification' });
     }
 
-    res.json({ message: 'Notification deleted successfully', status: 200 });
+    res.json({ data: null, message: 'Notification deleted successfully', status: 200 });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
@@ -145,6 +145,7 @@ export const broadcastNotification = async (req, res) => {
     }
 
     res.status(201).json({
+      data: null,
       message: `Notification sent to ${userIds.length} users`,
       sentTo: userIds.length,
       status: 201,
