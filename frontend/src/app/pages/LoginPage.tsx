@@ -14,7 +14,7 @@ export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useApp();
+  const { login, forgotPassword } = useApp();
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -43,7 +43,7 @@ export function LoginPage() {
     }
   };
 
-  const handleForgotPassword = (e: React.FormEvent) => {
+  const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -54,11 +54,14 @@ export function LoginPage() {
 
     setIsLoading(true);
 
-    // Simulate Firebase Auth password reset email
-    setTimeout(() => {
+    try {
+      await forgotPassword(email);
       setIsLoading(false);
       setView('forgot-success');
-    }, 1000);
+    } catch (err: any) {
+      setError(err.message || 'Failed to send reset link. Please try again.');
+      setIsLoading(false);
+    }
   };
 
   return (

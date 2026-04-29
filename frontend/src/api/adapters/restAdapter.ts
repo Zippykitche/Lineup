@@ -154,6 +154,13 @@ export class RestAdapter implements IApiAdapter {
     throw new Error('Not implemented');
   }
 
+  async forgotPassword(email: string): Promise<ApiResponse<void>> {
+    return this.request<void>('/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  }
+
   // --- Users ---
   async getUsers(params?: QueryParams): Promise<PaginatedResponse<User>> {
     const query = new URLSearchParams(params as any).toString();

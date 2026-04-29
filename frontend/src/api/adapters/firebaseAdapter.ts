@@ -36,6 +36,10 @@ export class FirebaseAdapter implements IApiAdapter {
     throw new AppError('Firebase refresh not implemented', 'NOT_IMPLEMENTED', 501);
   }
 
+  async forgotPassword(email: string): Promise<ApiResponse<void>> {
+    throw new AppError('Firebase forgotPassword not implemented', 'NOT_IMPLEMENTED', 501);
+  }
+
   // Users
   async getUsers(params?: QueryParams): Promise<PaginatedResponse<User>> {
     throw new AppError('Firebase getUsers not implemented', 'NOT_IMPLEMENTED', 501);

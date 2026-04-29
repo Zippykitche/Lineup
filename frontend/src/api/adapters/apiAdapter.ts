@@ -8,6 +8,7 @@ export interface IApiAdapter {
   register(user: Partial<User> & { password?: string }): Promise<ApiResponse<User>>;
   getCurrentUser(): Promise<User | null>;
   refreshToken(token: string): Promise<AuthResponse>;
+  forgotPassword(email: string): Promise<ApiResponse<void>>;
 
   // Users
   getUsers(params?: QueryParams): Promise<PaginatedResponse<User>>;

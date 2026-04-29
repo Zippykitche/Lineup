@@ -18,6 +18,7 @@ interface AppContextType {
   login: (email: string, password?: string) => Promise<boolean>;
   logout: () => void;
   register: (user: Partial<User> & { password?: string }) => Promise<boolean>;
+  forgotPassword: (email: string) => Promise<boolean>;
   addEvent: (event: Omit<Event, "id">) => Promise<void>;
   updateEvent: (id: string, event: Partial<Event>) => Promise<void>;
   deleteEvent: (id: string) => Promise<void>;
@@ -133,6 +134,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const forgotPassword = async (email: string): Promise<boolean> => {
+    try {
+      setIsLoading(true);
+      await api.forgotPassword(email);
+      return true;
+    } catch (error) {
+      console.error("Forgot password failed:", error);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const addEvent = async (event: Omit<Event, "id">) => {
     await api.createEvent(event);
     await refreshData();
@@ -185,6 +199,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         login,
         logout,
         register,
+        forgotPassword,
         addEvent,
         updateEvent,
         deleteEvent,
