@@ -3,8 +3,8 @@ import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCDyy28_R7rnl5anxNz1nqnTN62KrjlZtE",
-  authDomain: "lineup-backend-dd4a0.firebaseapp.com",
-  projectId: "lineup-backend-dd4a0",
+  authDomain: "kbc-lineup.firebaseapp.com",
+  projectId: "kbc-lineup",
 };
 
 const app = initializeApp(firebaseConfig);

@@ -1,6 +1,6 @@
 import express from 'express';
 import axios from 'axios';
-import { adminAuth as auth } from '../config/firebase.js';
+import { adminAuth as auth, db, admin } from '../config/firebase.js';
 import {
   createUser,
   getMe,
@@ -27,7 +27,10 @@ router.post('/login', async (req, res) => {
     return res.status(400).json({ message: 'Email and password are required' });
   }
 
+  const currentProjectId = admin.app().options.projectId;
+
   try {
+    console.log(`[AUTH] Login attempt: ${email} (Project: ${currentProjectId})`);
     // Try Firebase REST API
     const isEmulator = process.env.USE_EMULATOR === 'true';
     const loginUrl = isEmulator
@@ -40,17 +43,26 @@ router.post('/login', async (req, res) => {
       returnSecureToken: true
     });
 
+    console.log('[AUTH] Firebase REST API login successful');
+    const uid = response.data.localId;
+    const userDoc = await db.collection('users').doc(uid).get();
+    const userData = userDoc.exists ? userDoc.data() : {};
+
     res.json({
       data: {
         token: response.data.idToken,
         email: response.data.email,
-        uid: response.data.localId
+        uid: uid,
+        fullName: userData.fullName || userData.full_name || response.data.displayName,
+        role: userData.role || 'assignee'
       }
     });
   } catch (err) {
+    console.error(`[AUTH] Firebase REST API failed: ${err.response?.data?.error?.message || err.message}`);
     // Fallback for testing: if REST API fails, generate a custom token for the user
     try {
       const userRecord = await auth.getUserByEmail(email);
+      console.log(`[AUTH] User found in Auth: ${userRecord.uid}. Generating custom token...`);
       const customToken = await auth.createCustomToken(userRecord.uid);
       
       // We NEED an ID token for verifyIdToken middleware to work.
@@ -61,15 +73,21 @@ router.post('/login', async (req, res) => {
         returnSecureToken: true
       });
 
+      console.log('[AUTH] Custom token exchange successful');
+      const userDoc = await db.collection('users').doc(userRecord.uid).get();
+      const userData = userDoc.exists ? userDoc.data() : {};
+
       res.json({
         data: {
           token: exchangeResponse.data.idToken,
           email: userRecord.email,
-          uid: userRecord.uid
+          uid: userRecord.uid,
+          fullName: userData.fullName || userData.full_name || userRecord.displayName,
+          role: userData.role || 'assignee'
         }
       });
     } catch (adminErr) {
-      console.error('Login error:', err.response?.data || err.message);
+      console.error(`[AUTH] Login fallback failed: ${adminErr.message}`);
       res.status(401).json({ message: 'Invalid email or password' });
     }
   }
