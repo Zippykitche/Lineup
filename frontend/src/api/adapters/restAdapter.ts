@@ -95,7 +95,7 @@ export class RestAdapter implements IApiAdapter {
       body: JSON.stringify({ email, password }),
     });
 
-    const { token, uid } = response.data;
+    const { token, uid, fullName, role } = response.data;
     localStorage.setItem('token', token);
 
     try {
@@ -110,7 +110,7 @@ export class RestAdapter implements IApiAdapter {
       console.warn('Failed to fetch user profile, using basic info from login:', error);
       // Fallback: return a basic user object if /me fails (e.g. token verification lag)
       return {
-        user: this.mapUser({ uid, email }),
+        user: this.mapUser({ uid, email, fullName, role }),
         token,
         refreshToken: '',
       };
