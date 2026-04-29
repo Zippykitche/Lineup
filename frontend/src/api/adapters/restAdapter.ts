@@ -95,21 +95,48 @@ export class RestAdapter implements IApiAdapter {
       body: JSON.stringify({ email, password }),
     });
 
-    const { token } = response.data;
+    const { token, uid } = response.data;
     localStorage.setItem('token', token);
 
-    // Fetch full user data after login
-    const userResponse = await this.request<any>('/auth/me');
-
-    return {
-      user: this.mapUser(userResponse.data),
-      token,
-      refreshToken: '', 
-    };
+    try {
+      // Fetch full user data after login
+      const userResponse = await this.request<any>('/auth/me');
+      return {
+        user: this.mapUser(userResponse.data),
+        token,
+        refreshToken: '', 
+      };
+    } catch (error) {
+      console.warn('Failed to fetch user profile, using basic info from login:', error);
+      // Fallback: return a basic user object if /me fails (e.g. token verification lag)
+      return {
+        user: this.mapUser({ uid, email }),
+        token,
+        refreshToken: '',
+      };
+    }
   }
 
   async logout(): Promise<void> {
     localStorage.removeItem('token');
+  }
+
+  async register(user: Partial<User> & { password?: string }): Promise<ApiResponse<User>> {
+    const response = await this.request<any>('/auth/create-user', {
+      method: 'POST',
+      body: JSON.stringify({
+        email: user.workEmail,
+        password: user.password || 'password123',
+        fullName: user.fullName,
+        role: user.role,
+        department: user.department,
+        phone: user.phone,
+      }),
+    });
+    return {
+      ...response,
+      data: this.mapUser(response.data)
+    };
   }
 
   async getCurrentUser(): Promise<User | null> {

@@ -5,6 +5,7 @@ export interface IApiAdapter {
   // Auth
   login(email: string, password: string): Promise<AuthResponse>;
   logout(): Promise<void>;
+  register(user: Partial<User> & { password?: string }): Promise<ApiResponse<User>>;
   getCurrentUser(): Promise<User | null>;
   refreshToken(token: string): Promise<AuthResponse>;
 

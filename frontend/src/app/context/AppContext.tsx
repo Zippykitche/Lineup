@@ -17,6 +17,7 @@ interface AppContextType {
   isLoading: boolean;
   login: (email: string, password?: string) => Promise<boolean>;
   logout: () => void;
+  register: (user: Partial<User> & { password?: string }) => Promise<boolean>;
   addEvent: (event: Omit<Event, "id">) => Promise<void>;
   updateEvent: (id: string, event: Partial<Event>) => Promise<void>;
   deleteEvent: (id: string) => Promise<void>;
@@ -109,6 +110,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setNotifications([]);
   };
 
+  const register = async (user: Partial<User> & { password?: string }): Promise<boolean> => {
+    try {
+      setIsLoading(true);
+      await api.register(user);
+      await refreshData();
+      return true;
+    } catch (error) {
+      console.error("Registration failed:", error);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const addEvent = async (event: Omit<Event, "id">) => {
     await api.createEvent(event);
     await refreshData();
@@ -160,6 +175,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         isLoading,
         login,
         logout,
+        register,
         addEvent,
         updateEvent,
         deleteEvent,

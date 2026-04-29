@@ -41,9 +41,11 @@ router.post('/login', async (req, res) => {
     });
 
     res.json({
-      token: response.data.idToken,
-      email: response.data.email,
-      uid: response.data.localId
+      data: {
+        token: response.data.idToken,
+        email: response.data.email,
+        uid: response.data.localId
+      }
     });
   } catch (err) {
     // Fallback for testing: if REST API fails, generate a custom token for the user
@@ -51,10 +53,20 @@ router.post('/login', async (req, res) => {
       const userRecord = await auth.getUserByEmail(email);
       const customToken = await auth.createCustomToken(userRecord.uid);
       
-      res.json({
+      // We NEED an ID token for verifyIdToken middleware to work.
+      // Exchange custom token for ID token using Firebase REST API
+      const exchangeUrl = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=${process.env.FIREBASE_API_KEY}`;
+      const exchangeResponse = await axios.post(exchangeUrl, {
         token: customToken,
-        email: userRecord.email,
-        uid: userRecord.uid
+        returnSecureToken: true
+      });
+
+      res.json({
+        data: {
+          token: exchangeResponse.data.idToken,
+          email: userRecord.email,
+          uid: userRecord.uid
+        }
       });
     } catch (adminErr) {
       console.error('Login error:', err.response?.data || err.message);

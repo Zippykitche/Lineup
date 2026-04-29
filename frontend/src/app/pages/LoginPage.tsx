@@ -34,7 +34,7 @@ export function LoginPage() {
       if (success) {
         navigate('/dashboard');
       } else {
-        setError('Invalid email or password. Please try again or use a demo account.');
+        setError('Invalid email or password. Please try again.');
         setIsLoading(false);
       }
     } catch (err) {
@@ -240,37 +240,6 @@ export function LoginPage() {
             )}
           </div>
 
-          {/* Demo Info */}
-          {view === 'login' && (
-            <div className="bg-blue-950/40 px-8 py-5 border-t border-white/5">
-              <p className="text-xs font-medium text-blue-400 mb-3 uppercase tracking-wider">Demo Access</p>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between bg-white/5 border border-white/5 rounded-md px-3 py-2">
-                  <span className="text-xs font-medium text-white">Super Admin</span>
-                  <span className="text-xs text-blue-300 font-mono">sarah.johnson@kbc.com</span>
-                </div>
-                <div className="flex items-center justify-between bg-white/5 border border-white/5 rounded-md px-3 py-2">
-                  <span className="text-xs font-medium text-white">Editor</span>
-                  <span className="text-xs text-blue-300 font-mono">michael.chen@kbc.com</span>
-                </div>
-                <div className="flex items-center justify-between bg-white/5 border border-white/5 rounded-md px-3 py-2">
-                  <span className="text-xs font-medium text-white">Assignee</span>
-                  <span className="text-xs text-blue-300 font-mono">emily.davis@kbc.com</span>
-                </div>
-              </div>
-              <p className="text-[10px] text-blue-400 mt-3 text-center">Use any password to sign in</p>
-              <div className="mt-4 pt-3 border-t border-white/5 text-center">
-                <button
-                  type="button"
-                  onClick={() => navigate('/email-template')}
-                  className="text-xs text-blue-300 hover:text-white flex items-center justify-center gap-1 mx-auto transition-colors"
-                >
-                  <Mail className="w-3 h-3" />
-                  Preview Password Reset Email Template
-                </button>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Footer */}

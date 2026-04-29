@@ -100,24 +100,25 @@ export function TeamPage() {
     setRole('');
   };
 
-  const handleCreateUser = (e: React.FormEvent) => {
+  const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!fullName || !workEmail || !department || !role) return;
 
-    const newUser: User = {
-      id: Date.now().toString(),
+    const newUser = {
       fullName,
       workEmail: workEmail.trim().toLowerCase(),
       phone,
       department,
-      role,
+      role: role as Role,
+      password: 'password123', // Default password for new users
     };
 
-    register(newUser);
-    setDemoUsers((prev) => [...prev, newUser]);
-    resetCreateForm();
-    setShowCreateUser(false);
+    const success = await register(newUser);
+    if (success) {
+      resetCreateForm();
+      setShowCreateUser(false);
+    }
   };
 
   const openRoleDialog = (user: User) => {

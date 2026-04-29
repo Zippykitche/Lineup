@@ -1,6 +1,6 @@
 import { User, Event, Task, Notification, Role } from '../app/types';
 
-export type ApiMode = 'mock' | 'rest' | 'firebase';
+export type ApiMode = 'rest' | 'firebase';
 
 export interface ApiResponse<T> {
   data: T;

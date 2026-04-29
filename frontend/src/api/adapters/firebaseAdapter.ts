@@ -23,6 +23,10 @@ export class FirebaseAdapter implements IApiAdapter {
     // await signOut(auth);
   }
 
+  async register(user: Partial<User> & { password?: string }): Promise<ApiResponse<User>> {
+    throw new AppError('Firebase register not implemented', 'NOT_IMPLEMENTED', 501);
+  }
+
   async getCurrentUser(): Promise<User | null> {
     // return auth.currentUser;
     return null;
@@ -71,6 +75,10 @@ export class FirebaseAdapter implements IApiAdapter {
     throw new AppError('Firebase getTaskById not implemented', 'NOT_IMPLEMENTED', 501);
   }
 
+  async getMyTasks(params?: QueryParams): Promise<PaginatedResponse<Task>> {
+    throw new AppError('Firebase getMyTasks not implemented', 'NOT_IMPLEMENTED', 501);
+  }
+
   async createTask(task: Partial<Task>): Promise<ApiResponse<Task>> {
     throw new AppError('Firebase createTask not implemented', 'NOT_IMPLEMENTED', 501);
   }
@@ -90,5 +98,13 @@ export class FirebaseAdapter implements IApiAdapter {
 
   async markNotificationAsRead(id: string): Promise<ApiResponse<Notification>> {
     throw new AppError('Firebase markNotificationAsRead not implemented', 'NOT_IMPLEMENTED', 501);
+  }
+
+  async markAllNotificationsAsRead(): Promise<ApiResponse<void>> {
+    throw new AppError('Firebase markAllNotificationsAsRead not implemented', 'NOT_IMPLEMENTED', 501);
+  }
+
+  async deleteNotification(id: string): Promise<ApiResponse<void>> {
+    throw new AppError('Firebase deleteNotification not implemented', 'NOT_IMPLEMENTED', 501);
   }
 }

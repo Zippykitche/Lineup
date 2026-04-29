@@ -1,6 +1,5 @@
 import { ApiMode } from './types';
 import { IApiAdapter } from './adapters/apiAdapter';
-import { MockAdapter } from './adapters/mockAdapter';
 import { RestAdapter } from './adapters/restAdapter';
 import { FirebaseAdapter } from './adapters/firebaseAdapter';
 
@@ -14,13 +13,11 @@ const FIREBASE_CONFIG = {
 
 function createAdapter(mode: ApiMode): IApiAdapter {
   switch (mode) {
-    case 'rest':
-      return new RestAdapter(API_BASE_URL);
     case 'firebase':
       return new FirebaseAdapter(FIREBASE_CONFIG);
-    case 'mock':
+    case 'rest':
     default:
-      return new MockAdapter();
+      return new RestAdapter(API_BASE_URL);
   }
 }
 
