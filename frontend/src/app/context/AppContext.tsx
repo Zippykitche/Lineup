@@ -44,19 +44,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
     
     setIsLoading(true);
     try {
-      const [usersRes, eventsRes, tasksRes, notifsRes] = await Promise.all([
+      // Use Promise.allSettled to ensure one failure doesn't block other data
+      const results = await Promise.allSettled([
         api.getUsers(),
         api.getEvents(),
         currentUser.role === 'assignee' ? api.getMyTasks() : api.getTasks(),
         api.getNotifications()
       ]);
 
-      setUsers(usersRes.data);
-      setEvents(eventsRes.data);
-      setTasks(tasksRes.data);
-      setNotifications(notifsRes.data);
+      if (results[0].status === 'fulfilled') setUsers(results[0].value.data);
+      if (results[1].status === 'fulfilled') setEvents(results[1].value.data);
+      if (results[2].status === 'fulfilled') setTasks(results[2].value.data);
+      if (results[3].status === 'fulfilled') setNotifications(results[3].value.data);
+      
+      // Log failures for debugging
+      results.forEach((result, index) => {
+        if (result.status === 'rejected') {
+          const endpoints = ['users', 'events', 'tasks', 'notifications'];
+          console.warn(`Failed to fetch ${endpoints[index]}:`, result.reason);
+        }
+      });
     } catch (error) {
-      console.error("Failed to refresh data:", error);
+      console.error("Critical failure during data refresh:", error);
     } finally {
       setIsLoading(false);
     }

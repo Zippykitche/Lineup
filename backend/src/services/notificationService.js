@@ -32,7 +32,7 @@ export const getNotifications = async (userId, filters = {}) => {
       query = query.where('read', '==', filters.read);
     }
 
-    const snapshot = await query.orderBy('createdAt', 'desc').get();
+    const snapshot = await query.get();
 
     const notifications = snapshot.docs.map(doc => ({
       id: doc.id,

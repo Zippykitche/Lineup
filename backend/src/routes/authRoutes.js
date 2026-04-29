@@ -102,7 +102,7 @@ router.post('/logout', verifyToken, logout);
 
 // Super Admin only routes
 router.post('/create-user', verifyToken, requireRole(['super_admin']), createUser); // Use array for roles
-router.get('/users', verifyToken, requireRole(['super_admin']), getAllUsers); // Use array for roles
+router.get('/users', verifyToken, requireRole(['super_admin', 'editor']), getAllUsers); // Use array for roles
 router.patch('/users/:uid/role', verifyToken, requireRole(['super_admin']), updateUserRole); // Use array for roles
 router.delete('/users/:uid', verifyToken, requireRole(['super_admin']), deleteUser); // Use array for roles
 

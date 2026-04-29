@@ -13,7 +13,7 @@ const seedAdmin = async () => {
 
       await auth.updateUser(user.uid, {
         password,
-        displayName: 'Super Admin',
+        displayName: 'Admin',
       });
 
       console.log('✅ Password updated');
@@ -22,7 +22,7 @@ const seedAdmin = async () => {
         user = await auth.createUser({
           email,
           password,
-          displayName: 'Super Admin',
+          displayName: 'Admin',
         });
 
         console.log('✅ User created:', user.uid);
@@ -41,8 +41,8 @@ const seedAdmin = async () => {
         id: user.uid,
         email,
         workEmail: email,
-        fullName: 'Super Admin',
-        full_name: 'Super Admin',
+        fullName: 'Admin',
+        full_name: 'Admin',
         role: 'super_admin',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),

@@ -42,7 +42,7 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
   const canCreateEvent =
     currentUser?.role === 'super_admin' || currentUser?.role === 'editor';
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!canCreateEvent) {
@@ -55,21 +55,26 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
       return;
     }
 
-    addEvent({
-      title,
-      date,
-      startTime,
-      endTime,
-      description,
-      attendeeIds: selectedAttendees,
-      createdBy: currentUser?.id || '',
-      status,
-      outputType
-    });
+    try {
+      await addEvent({
+        title,
+        date,
+        startTime,
+        endTime,
+        description,
+        attendeeIds: selectedAttendees,
+        createdBy: currentUser?.id || '',
+        status,
+        outputType
+      });
 
-    toast.success('Event created successfully');
-    resetForm();
-    onOpenChange(false);
+      toast.success('Event created successfully');
+      resetForm();
+      onOpenChange(false);
+    } catch (error: any) {
+      console.error('Failed to create event:', error);
+      toast.error(error.message || 'Failed to create event. Please try again.');
+    }
   };
 
   const resetForm = () => {

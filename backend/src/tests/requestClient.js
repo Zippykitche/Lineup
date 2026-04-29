@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-const BASE_URL = process.env.BASE_URL || 'http://localhost:5000';
+const BASE_URL = process.env.BASE_URL || 'https://lineup-backend-1nyx.onrender.com';
 
 export const request = async (method, url, token = null, body = null) => {
   const res = await fetch(`${BASE_URL}${url}`, {

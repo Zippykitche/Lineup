@@ -1,4 +1,5 @@
 import { db } from '../config/firebase.js';
+import { sendNotificationToUsers } from '../services/notificationService.js';
 
 const normalizeEvent = (eventData = {}, id = null) => {
   return {
@@ -40,7 +41,9 @@ export const createEvent = async (req, res) => {
     title,
     date,
     startTime,
+    start_time,
     endTime,
+    end_time,
     description,
     outputType,
     output_type,
@@ -48,6 +51,8 @@ export const createEvent = async (req, res) => {
     assignees,
   } = req.body;
 
+  const actualStartTime = startTime || start_time;
+  const actualEndTime = endTime || end_time;
   const type = normalizeOutputType(outputType || output_type);
   const attendees = attendeeIds || assignees || [];
 
@@ -56,7 +61,7 @@ export const createEvent = async (req, res) => {
     return res.status(400).json({ message: 'Invalid output type' });
   }
 
-  if (!title || !date || !startTime || !endTime) {
+  if (!title || !date || !actualStartTime || !actualEndTime) {
     return res.status(400).json({ message: 'Missing required fields: title, date, startTime, endTime' });
   }
 
@@ -66,8 +71,8 @@ export const createEvent = async (req, res) => {
       id: eventRef.id,
       title,
       date,
-      startTime,
-      endTime,
+      startTime: actualStartTime,
+      endTime: actualEndTime,
       description: description || '',
       status: 'Planned',
       attendeeIds: attendees,
@@ -78,9 +83,19 @@ export const createEvent = async (req, res) => {
     };
 
     await eventRef.set(event);
+    console.log('✅ EVENT CREATED:', eventRef.id);
+
+    // Notify attendees
+    if (attendees.length > 0) {
+      await sendNotificationToUsers(attendees, {
+        message: `New event created: ${title} on ${date}`,
+        type: 'meeting',
+      });
+    }
+
     res.status(201).json({ data: event, status: 201 });
   } catch (err) {
-    console.error(err);
+    console.error('❌ CREATE EVENT ERROR:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };

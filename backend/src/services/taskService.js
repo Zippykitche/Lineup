@@ -37,7 +37,8 @@ export const getTasks = async (filters = {}) => {
       query = query.where('priority', '==', filters.priority);
     }
 
-    const snapshot = await query.orderBy('dueDate').get();
+    // Sort is handled in frontend to avoid Firestore Index requirements
+    const snapshot = await query.get();
 
     const tasks = snapshot.docs.map(doc => ({
       id: doc.id,
@@ -107,7 +108,6 @@ export const getUserTasks = async (userId) => {
     const snapshot = await db
       .collection('tasks')
       .where('assigneeId', '==', userId)
-      .orderBy('dueDate')
       .get();
 
     const tasks = snapshot.docs.map(doc => ({

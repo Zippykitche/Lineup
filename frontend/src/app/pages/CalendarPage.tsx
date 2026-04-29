@@ -43,9 +43,7 @@ export function CalendarPage() {
     }
   };
 
-  const userEvents = isAssignee
-    ? events.filter((event) => event.attendeeIds.includes(currentUser?.id || ''))
-    : events;
+  const userEvents = events;
 
   const getEventsForDate = (date: Date) => {
     return userEvents.filter((event) => isSameDay(parseISO(event.date), date));

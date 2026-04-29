@@ -38,7 +38,7 @@ export function CreateTaskDialog({ open, onOpenChange }: CreateTaskDialogProps) 
   const canAssignTasks =
     currentUser?.role === 'super_admin' || currentUser?.role === 'editor';
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!canAssignTasks) {
@@ -51,19 +51,24 @@ export function CreateTaskDialog({ open, onOpenChange }: CreateTaskDialogProps) 
       return;
     }
 
-    addTask({
-      title,
-      dueDate,
-      assigneeId,
-      status,
-      priority,
-      description,
-      createdBy: currentUser?.id || '',
-    });
+    try {
+      await addTask({
+        title,
+        dueDate,
+        assigneeId,
+        status,
+        priority,
+        description,
+        createdBy: currentUser?.id || '',
+      });
 
-    toast.success('Task created and assigned successfully');
-    resetForm();
-    onOpenChange(false);
+      toast.success('Task created and assigned successfully');
+      resetForm();
+      onOpenChange(false);
+    } catch (error: any) {
+      console.error('Failed to create task:', error);
+      toast.error(error.message || 'Failed to create task. Please try again.');
+    }
   };
 
   const resetForm = () => {

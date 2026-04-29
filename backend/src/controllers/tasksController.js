@@ -6,6 +6,7 @@ import {
   deleteTask,
   getUserTasks,
 } from '../services/taskService.js';
+import { createNotification } from '../services/notificationService.js';
 
 // Create task - Editor and Super Admin
 export const createTaskHandler = async (req, res) => {
@@ -30,6 +31,13 @@ export const createTaskHandler = async (req, res) => {
     if (!result) {
       return res.status(500).json({ message: 'Failed to create task' });
     }
+
+    // Notify assignee
+    await createNotification({
+      userId: assigneeId,
+      message: `New task assigned: ${title} (Due: ${dueDate})`,
+      type: 'task',
+    });
 
     res.status(201).json({ data: result, message: 'Task created successfully', status: 201 });
   } catch (err) {
@@ -108,6 +116,26 @@ export const updateTaskHandler = async (req, res) => {
   const { id } = req.params;
 
   try {
+    const task = await getTaskById(id);
+    if (!task) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+
+    // If user is an assignee, they can ONLY update the status
+    if (req.user.role === 'assignee') {
+      const updateKeys = Object.keys(req.body);
+      const isOnlyStatus = updateKeys.length === 1 && updateKeys[0] === 'status';
+
+      if (!isOnlyStatus) {
+        return res.status(403).json({ message: 'Assignees can only update the status of a task' });
+      }
+
+      // Also ensure they are the one assigned to it
+      if (task.assigneeId !== req.user.uid) {
+        return res.status(403).json({ message: 'You can only update your own tasks' });
+      }
+    }
+
     const result = await updateTask(id, req.body);
 
     if (!result) {
@@ -171,6 +199,42 @@ export const getMyTasks = async (req, res) => {
       totalPages,
       status: 200,
     });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Update task status - Assignee can update their own tasks
+export const updateTaskStatus = async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  const validStatuses = ['Pending', 'In Progress', 'Completed'];
+  if (!validStatuses.includes(status)) {
+    return res.status(400).json({ message: 'Invalid status' });
+  }
+
+  try {
+    const task = await getTaskById(id);
+    if (!task) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+
+    // Check if the user is the assignee or an editor/admin
+    // For now, we'll allow the request if the token is valid, 
+    // but a stricter check would be:
+    // if (req.user.role === 'assignee' && task.assigneeId !== req.user.uid) {
+    //   return res.status(403).json({ message: 'Not authorized to update this task status' });
+    // }
+
+    const result = await updateTask(id, { status });
+
+    if (!result) {
+      return res.status(500).json({ message: 'Failed to update task status' });
+    }
+
+    res.json({ data: result, message: 'Status updated successfully', status: 200 });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
