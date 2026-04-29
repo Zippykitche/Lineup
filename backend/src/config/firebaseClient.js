@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { getAuth, connectAuthEmulator } from "firebase/auth";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -11,5 +11,10 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+
+if (process.env.USE_EMULATOR === "true") {
+  connectAuthEmulator(auth, "http://127.0.0.1:9099");
+  console.log("Firebase Auth Client connected to Emulator");
+}
 
 export { auth };

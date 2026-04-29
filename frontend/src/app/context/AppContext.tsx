@@ -98,8 +98,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, [currentUser]);
 
-  const login = async (email: string, password = "password"): Promise<boolean> => {
+  const login = async (email: string, password?: string): Promise<boolean> => {
     try {
+      if (!password) {
+        console.error("Login attempted without password");
+        return false;
+      }
       setIsLoading(true);
       const response = await api.login(email, password);
       setCurrentUser(response.user);

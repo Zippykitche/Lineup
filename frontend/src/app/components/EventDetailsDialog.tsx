@@ -38,8 +38,10 @@ export function EventDetailsDialog({
   const [isEditing, setIsEditing] = useState(false);
   const [status, setStatus] = useState<EventStatus>(event.status);
 
-  const isSuperAdmin = currentUser?.role === 'super_admin';
-  const isEditor = currentUser?.role === 'editor';
+  // Robust role checks
+  const role = currentUser?.role?.toLowerCase() || '';
+  const isSuperAdmin = role === 'super_admin';
+  const isEditor = role === 'editor';
   const canUpdateEventStatus = isSuperAdmin || isEditor;
 
   const attendees = users.filter((user) => event.attendeeIds.includes(user.id));

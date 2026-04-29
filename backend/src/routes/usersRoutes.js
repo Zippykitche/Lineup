@@ -5,7 +5,7 @@ import { requireRole } from '../middleware/roleMiddleware.js';
 
 const router = express.Router();
 
-router.get('/', verifyToken, requireRole(['super_admin', 'editor']), getAllUsers);
+router.get('/', verifyToken, requireRole(['super_admin', 'editor', 'assignee']), getAllUsers);
 router.patch('/:uid/role', verifyToken, requireRole(['super_admin']), updateUserRole);
 router.delete('/:uid', verifyToken, requireRole(['super_admin']), deleteUser);
 
