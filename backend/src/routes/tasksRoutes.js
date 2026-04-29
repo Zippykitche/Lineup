@@ -31,7 +31,7 @@ router.patch('/:id', verifyToken, requireRole(['editor', 'super_admin', 'assigne
 // Update task status - Specific endpoint
 router.patch('/:id/status', verifyToken, updateTaskStatus);
 
-// Delete task - Super Admin only
-router.delete('/:id', verifyToken, requireRole(['super_admin']), deleteTaskHandler);
+// Delete task - Editor and Super Admin
+router.delete('/:id', verifyToken, requireRole(['editor', 'super_admin']), deleteTaskHandler);
 
 export default router;

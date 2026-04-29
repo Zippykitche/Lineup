@@ -17,6 +17,6 @@ router.get('/', verifyToken, requireRole(['editor', 'super_admin', 'assignee']),
 router.get('/my-events', verifyToken, requireRole(['assignee']), getMyEvents);
 router.patch('/:id', verifyToken, requireRole(['editor', 'super_admin']), updateEvent);
 router.patch('/:id/status', verifyToken, updateStatus);
-router.delete('/:id', verifyToken, requireRole(['super_admin']), deleteEvent);
+router.delete('/:id', verifyToken, requireRole(['editor', 'super_admin']), deleteEvent);
 
 export default router;

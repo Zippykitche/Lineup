@@ -1,4 +1,6 @@
 import { adminAuth as auth, db } from '../config/firebase.js';
+import { auth as clientAuth } from '../config/firebaseClient.js';
+import { sendPasswordResetEmail } from 'firebase/auth';
 
 const normalizeUser = (userDoc) => {
   if (!userDoc) return null;
@@ -131,10 +133,13 @@ export const forgotPassword = async (req, res) => {
   }
 
   try {
-    await auth.generatePasswordResetLink(email);
+    // We use the client SDK here because it handles sending the email automatically.
+    // The Admin SDK generatePasswordResetLink only creates the link, it doesn't send the email.
+    await sendPasswordResetEmail(clientAuth, email);
     res.json({ data: null, message: 'Password reset email sent successfully', status: 200 });
   } catch (err) {
     console.error('Forgot password error:', err);
-    res.status(500).json({ message: 'Failed to send reset email' });
+    // Standardize error message for security (don't reveal if email exists or not)
+    res.status(200).json({ data: null, message: 'If an account exists for this email, a reset link has been sent.', status: 200 });
   }
 };
