@@ -36,7 +36,7 @@ export function TaskDetailsDialog({ task, open, onOpenChange }: TaskDetailsDialo
   const isAssignee = task.assigneeId === currentUser?.id;
 
   const canUpdateStatus = isSuperAdmin || isEditor || isAssignee;
-  const canDeleteTask = isSuperAdmin;
+  const canDeleteTask = isSuperAdmin || isEditor;
 
   const assignee = users.find((user) => user.id === task.assigneeId);
   const creator = users.find((user) => user.id === task.createdBy);
@@ -54,7 +54,7 @@ export function TaskDetailsDialog({ task, open, onOpenChange }: TaskDetailsDialo
 
   const handleDelete = () => {
     if (!canDeleteTask) {
-      toast.error('Only Super Admin can delete tasks');
+      toast.error('Only Super Admin or Editor can delete tasks');
       return;
     }
 
@@ -141,6 +141,11 @@ export function TaskDetailsDialog({ task, open, onOpenChange }: TaskDetailsDialo
           {canUpdateStatus && (
             <div className="pt-4 border-t">
               <h4 className="font-medium mb-2">Update Status</h4>
+              <span className="text-xs text-gray-500 mb-2 block italic">
+                {isAssignee && !isSuperAdmin && !isEditor 
+                  ? "As an assignee, you can only update task status." 
+                  : "Admins and Editors can update all task details."}
+              </span>
               <Select value={status} onValueChange={(v) => handleStatusChange(v as TaskStatus)}>
                 <SelectTrigger>
                   <SelectValue />

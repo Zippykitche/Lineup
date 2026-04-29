@@ -57,8 +57,8 @@ export function EventDetailsDialog({
   };
 
   const handleDelete = () => {
-    if (!isSuperAdmin) {
-      toast.error('Only Super Admin can delete events');
+    if (!isSuperAdmin && !isEditor) {
+      toast.error('Only Super Admin or Editor can delete events');
       return;
     }
 
@@ -176,13 +176,13 @@ export function EventDetailsDialog({
               )}
 
               <div className="sticky bottom-0 bg-white pt-4 border-t flex justify-end gap-2">
-                {isSuperAdmin && (
+                {(isSuperAdmin || isEditor) && (
                   <Button variant="outline" onClick={() => setIsEditing(true)}>
                     Edit Event
                   </Button>
                 )}
 
-                {isSuperAdmin && (
+                {(isSuperAdmin || isEditor) && (
                   <Button variant="destructive" onClick={handleDelete}>
                     <Trash2 className="w-4 h-4 mr-2" />
                     Delete Event
