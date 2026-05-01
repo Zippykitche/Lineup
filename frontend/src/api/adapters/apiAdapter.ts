@@ -13,9 +13,13 @@ export interface IApiAdapter {
   // Users
   getUsers(params?: QueryParams): Promise<PaginatedResponse<User>>;
   getUserById(id: string): Promise<ApiResponse<User>>;
+  suspendUser(uid: string): Promise<ApiResponse<User>>;
+  deleteUser(uid: string): Promise<ApiResponse<void>>;
+  updateUserRole(uid: string, role: string): Promise<ApiResponse<User>>;
 
   // Events
   getEvents(params?: QueryParams): Promise<PaginatedResponse<Event>>;
+  getPublicEvents(): Promise<ApiResponse<Event[]>>;
   getEventById(id: string): Promise<ApiResponse<Event>>;
   createEvent(event: Partial<Event>): Promise<ApiResponse<Event>>;
   updateEvent(id: string, event: Partial<Event>): Promise<ApiResponse<Event>>;

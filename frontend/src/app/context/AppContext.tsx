@@ -19,6 +19,9 @@ interface AppContextType {
   logout: () => void;
   register: (user: Partial<User> & { password?: string }) => Promise<boolean>;
   forgotPassword: (email: string) => Promise<boolean>;
+  suspendUser: (uid: string) => Promise<boolean>;
+  deleteUser: (uid: string) => Promise<boolean>;
+  updateUserRole: (uid: string, role: string) => Promise<boolean>;
   addEvent: (event: Omit<Event, "id">) => Promise<void>;
   updateEvent: (id: string, event: Partial<Event>) => Promise<void>;
   deleteEvent: (id: string) => Promise<void>;
@@ -153,6 +156,48 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const suspendUser = async (uid: string): Promise<boolean> => {
+    try {
+      setIsLoading(true);
+      await api.suspendUser(uid);
+      await refreshData();
+      return true;
+    } catch (error) {
+      console.error("Suspend user failed:", error);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const deleteUser = async (uid: string): Promise<boolean> => {
+    try {
+      setIsLoading(true);
+      await api.deleteUser(uid);
+      await refreshData();
+      return true;
+    } catch (error) {
+      console.error("Delete user failed:", error);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const updateUserRole = async (uid: string, role: string): Promise<boolean> => {
+    try {
+      setIsLoading(true);
+      await api.updateUserRole(uid, role);
+      await refreshData();
+      return true;
+    } catch (error) {
+      console.error("Update user role failed:", error);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const addEvent = async (event: Omit<Event, "id">) => {
     await api.createEvent(event);
     await refreshData();
@@ -206,6 +251,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         logout,
         register,
         forgotPassword,
+        suspendUser,
+        deleteUser,
+        updateUserRole,
         addEvent,
         updateEvent,
         deleteEvent,

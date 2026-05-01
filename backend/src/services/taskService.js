@@ -107,7 +107,7 @@ export const getUserTasks = async (userId) => {
   try {
     const snapshot = await db
       .collection('tasks')
-      .where('assigneeId', '==', userId)
+      .where('assigneeIds', 'array-contains', userId)
       .get();
 
     const tasks = snapshot.docs.map(doc => ({

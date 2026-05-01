@@ -1,6 +1,7 @@
 import express from 'express';
 import {
   createEvent,
+  getPublicEvents,
   getAllEvents,
   getMyEvents,
   updateEvent,
@@ -11,6 +12,9 @@ import { verifyToken } from '../middleware/authMiddleware.js';
 import { requireRole } from '../middleware/roleMiddleware.js';
 
 const router = express.Router();
+
+// Public holidays - accessible to everyone
+router.get('/public', getPublicEvents);
 
 router.post('/', verifyToken, requireRole(['editor', 'super_admin']), createEvent);
 router.get('/', verifyToken, requireRole(['editor', 'super_admin', 'assignee']), getAllEvents);

@@ -11,6 +11,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
+import { Checkbox } from './ui/checkbox';
 import {
   Select,
   SelectContent,
@@ -30,13 +31,21 @@ export function CreateTaskDialog({ open, onOpenChange }: CreateTaskDialogProps) 
   const { currentUser, users, addTask } = useApp();
   const [title, setTitle] = useState('');
   const [dueDate, setDueDate] = useState('');
-  const [assigneeId, setAssigneeId] = useState('');
+  const [assigneeIds, setAssigneeIds] = useState<string[]>([]);
   const [status, setStatus] = useState<TaskStatus>('Pending');
   const [priority, setPriority] = useState<TaskPriority>('Medium');
   const [description, setDescription] = useState('');
 
   const canAssignTasks =
     currentUser?.role === 'super_admin' || currentUser?.role === 'editor';
+
+  const handleAssigneeToggle = (userId: string) => {
+    setAssigneeIds(prev =>
+      prev.includes(userId)
+        ? prev.filter(id => id !== userId)
+        : [...prev, userId]
+    );
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,8 +55,8 @@ export function CreateTaskDialog({ open, onOpenChange }: CreateTaskDialogProps) 
       return;
     }
 
-    if (!title || !dueDate || !assigneeId) {
-      toast.error('Please fill in all required fields');
+    if (!title || !dueDate || assigneeIds.length === 0) {
+      toast.error('Please fill in all required fields and select at least one assignee');
       return;
     }
 
@@ -55,7 +64,7 @@ export function CreateTaskDialog({ open, onOpenChange }: CreateTaskDialogProps) 
       await addTask({
         title,
         dueDate,
-        assigneeId,
+        assigneeIds,
         status,
         priority,
         description,
@@ -74,20 +83,20 @@ export function CreateTaskDialog({ open, onOpenChange }: CreateTaskDialogProps) 
   const resetForm = () => {
     setTitle('');
     setDueDate('');
-    setAssigneeId('');
+    setAssigneeIds([]);
     setStatus('Pending');
     setPriority('Medium');
     setDescription('');
   };
 
-  const assignableUsers = users.filter((u) => u.role === 'assignee');
+  const assignableUsers = users.filter((u) => u.role === 'assignee' && !u.suspended);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create New Task</DialogTitle>
-          <DialogDescription>Assign a deliverable to an assignee</DialogDescription>
+          <DialogDescription>Assign a deliverable to one or more assignees</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -115,24 +124,6 @@ export function CreateTaskDialog({ open, onOpenChange }: CreateTaskDialogProps) 
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="assignee">Assign To *</Label>
-              <Select value={assigneeId} onValueChange={setAssigneeId} required>
-                <SelectTrigger id="assignee">
-                  <SelectValue placeholder="Select assignee" />
-                </SelectTrigger>
-                <SelectContent>
-                  {assignableUsers.map((user) => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {user.fullName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
               <Label htmlFor="priority">Priority</Label>
               <Select value={priority} onValueChange={(v) => setPriority(v as TaskPriority)}>
                 <SelectTrigger id="priority">
@@ -145,20 +136,31 @@ export function CreateTaskDialog({ open, onOpenChange }: CreateTaskDialogProps) 
                 </SelectContent>
               </Select>
             </div>
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
-              <Select value={status} onValueChange={(v) => setStatus(v as TaskStatus)}>
-                <SelectTrigger id="status">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Pending">Pending</SelectItem>
-                  <SelectItem value="In Progress">In Progress</SelectItem>
-                  <SelectItem value="Completed">Completed</SelectItem>
-                </SelectContent>
-              </Select>
+          <div className="space-y-2">
+            <Label>Assign To * (Select one or more assignees)</Label>
+            <div className="border rounded-lg p-3 space-y-2 max-h-48 overflow-y-auto">
+              {assignableUsers.length > 0 ? (
+                assignableUsers.map((user) => (
+                  <div key={user.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`assignee-${user.id}`}
+                      checked={assigneeIds.includes(user.id)}
+                      onCheckedChange={() => handleAssigneeToggle(user.id)}
+                    />
+                    <Label htmlFor={`assignee-${user.id}`} className="cursor-pointer flex-1">
+                      {user.fullName}
+                    </Label>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-gray-500">No available assignees</p>
+              )}
             </div>
+            {assigneeIds.length > 0 && (
+              <p className="text-sm text-gray-600">{assigneeIds.length} assignee(s) selected</p>
+            )}
           </div>
 
           <div className="space-y-2">

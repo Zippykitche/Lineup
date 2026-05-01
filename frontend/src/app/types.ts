@@ -10,6 +10,8 @@ export type EventStatus = 'Planned' | 'In Progress' | 'Done';
 
 export type OutputType = 'TV' | 'Radio' | 'Social' | 'Web';
 
+export type EventType = 'general' | 'holiday';
+
 export interface Event {
   id: string;
   title: string;
@@ -21,6 +23,7 @@ export interface Event {
   createdBy: string;
   status: EventStatus;
   outputType: OutputType;
+  type?: EventType;
 }
 
 export interface User {
@@ -31,6 +34,7 @@ export interface User {
   department: string;
   phone: string;
   photoUrl?: string;
+  suspended?: boolean;
 }
 
 
@@ -38,7 +42,7 @@ export interface Task {
   id: string;
   title: string;
   dueDate: string; // ISO date string
-  assigneeId: string;
+  assigneeIds: string[];
   status: TaskStatus;
   priority: TaskPriority;
   createdBy: string;

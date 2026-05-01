@@ -31,7 +31,7 @@ export function TasksPage() {
   const canCreateTask = isSuperAdmin || isEditor;
 
   const userTasks = isAssignee
-    ? tasks.filter((task) => task.assigneeId === currentUser?.id)
+    ? tasks.filter((task) => task.assigneeIds?.includes(currentUser?.id || ''))
     : tasks;
 
   const filteredTasks = userTasks.filter((task) => {
@@ -57,6 +57,10 @@ export function TasksPage() {
 
   const getUserName = (userId: string) => {
     return users.find((u) => u.id === userId)?.fullName || 'Unknown';
+  };
+
+  const getAssigneeNames = (assigneeIds: string[]) => {
+    return assigneeIds.map(id => getUserName(id)).join(', ');
   };
 
   const groupedTasks = {
@@ -95,9 +99,9 @@ export function TasksPage() {
               </div>
               <div>
                 <span className="font-medium">
-                  {isAssignee ? 'Assigned by:' : 'Assignee:'}
+                  {isAssignee ? 'Assigned by:' : 'Assignees:'}
                 </span>{' '}
-                {isAssignee ? getUserName(task.createdBy) : getUserName(task.assigneeId)}
+                {isAssignee ? getUserName(task.createdBy) : getAssigneeNames(task.assigneeIds || [])}
               </div>
             </div>
           </div>

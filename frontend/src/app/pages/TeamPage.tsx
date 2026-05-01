@@ -20,8 +20,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
-import { Search, Mail, Phone, Users, Plus, Shield, UserCog } from 'lucide-react';
+import { Search, Mail, Phone, Users, Plus, Shield, UserCog, Ban, Trash2 } from 'lucide-react';
 import { Role, User } from '../types';
+import { toast } from 'sonner';
 
 const ROLE_OPTIONS: { value: Role; label: string }[] = [
   { value: 'super_admin', label: 'Super Admin' },
@@ -40,7 +41,7 @@ const DEPARTMENT_OPTIONS = [
 ];
 
 export function TeamPage() {
-  const { users, tasks, events, currentUser, register } = useApp();
+  const { users, tasks, events, currentUser, register, suspendUser, deleteUser, updateUserRole } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
   const [showCreateUser, setShowCreateUser] = useState(false);
   const [showRoleDialog, setShowRoleDialog] = useState(false);
@@ -84,7 +85,7 @@ export function TeamPage() {
   };
 
   const getUserStats = (userId: string) => {
-    const userTasks = tasks.filter((t) => t.assigneeId === userId);
+    const userTasks = tasks.filter((t) => t.assigneeIds?.includes(userId));
     const activeTasks = userTasks.filter((t) => t.status !== 'Completed').length;
     const userEvents = events.filter((e) => e.attendeeIds.includes(userId));
     const upcomingEvents = userEvents.filter((e) => new Date(e.date) >= new Date()).length;
@@ -118,6 +119,9 @@ export function TeamPage() {
     if (success) {
       resetCreateForm();
       setShowCreateUser(false);
+      toast.success('User created successfully');
+    } else {
+      toast.error('Failed to create user');
     }
   };
 
@@ -127,18 +131,49 @@ export function TeamPage() {
     setShowRoleDialog(true);
   };
 
-  const handleAssignRole = () => {
+  const handleAssignRole = async () => {
     if (!selectedUser || !roleToAssign) return;
 
-    setDemoUsers((prev) =>
-      prev.map((user) =>
-        user.id === selectedUser.id ? { ...user, role: roleToAssign } : user
-      )
-    );
+    const success = await updateUserRole(selectedUser.id, roleToAssign);
+    if (success) {
+      setDemoUsers((prev) =>
+        prev.map((user) =>
+          user.id === selectedUser.id ? { ...user, role: roleToAssign } : user
+        )
+      );
+      setShowRoleDialog(false);
+      setSelectedUser(null);
+      setRoleToAssign('');
+      toast.success('User role updated successfully');
+    } else {
+      toast.error('Failed to update user role');
+    }
+  };
 
-    setShowRoleDialog(false);
-    setSelectedUser(null);
-    setRoleToAssign('');
+  const handleSuspendUser = async (user: User) => {
+    if (confirm(`Are you sure you want to suspend ${user.fullName}?`)) {
+      const success = await suspendUser(user.id);
+      if (success) {
+        setDemoUsers((prev) =>
+          prev.map((u) => (u.id === user.id ? { ...u, suspended: true } : u))
+        );
+        toast.success(`${user.fullName} has been suspended`);
+      } else {
+        toast.error('Failed to suspend user');
+      }
+    }
+  };
+
+  const handleDeleteUser = async (user: User) => {
+    if (confirm(`Are you sure you want to delete ${user.fullName}? This action cannot be undone.`)) {
+      const success = await deleteUser(user.id);
+      if (success) {
+        setDemoUsers((prev) => prev.filter((u) => u.id !== user.id));
+        toast.success(`${user.fullName} has been deleted`);
+      } else {
+        toast.error('Failed to delete user');
+      }
+    }
   };
 
   return (
@@ -238,8 +273,15 @@ export function TeamPage() {
                         </div>
                       )}
 
+                      {user.suspended && (
+                        <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-700">
+                          <Ban className="w-3 h-3 inline mr-1" />
+                          This user has been suspended
+                        </div>
+                      )}
+
                       {isSuperAdmin && user.id !== currentUser?.id && (
-                        <div className="mt-4 pt-3 border-t">
+                        <div className="mt-4 pt-3 border-t flex flex-wrap gap-2">
                           <Button
                             variant="outline"
                             size="sm"
@@ -247,6 +289,25 @@ export function TeamPage() {
                           >
                             <UserCog className="w-4 h-4 mr-2" />
                             Assign Role
+                          </Button>
+                          {!user.suspended && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-orange-600 border-orange-300 hover:bg-orange-50"
+                              onClick={() => handleSuspendUser(user)}
+                            >
+                              <Ban className="w-4 h-4 mr-2" />
+                              Suspend
+                            </Button>
+                          )}
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDeleteUser(user)}
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Delete
                           </Button>
                         </div>
                       )}

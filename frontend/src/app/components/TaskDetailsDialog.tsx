@@ -37,13 +37,13 @@ export function TaskDetailsDialog({ task, open, onOpenChange }: TaskDetailsDialo
   const role = currentUser?.role?.toLowerCase() || '';
   const isSuperAdmin = role === 'super_admin';
   const isEditor = role === 'editor';
-  const isAssignee = task.assigneeId === currentUser?.id;
+  const isAssignee = task.assigneeIds?.includes(currentUser?.id || '');
 
   const canUpdateStatus = isSuperAdmin || isEditor || isAssignee;
   const canEditTask = isSuperAdmin || isEditor;
   const canDeleteTask = isSuperAdmin || isEditor;
 
-  const assignee = users.find((user) => user.id === task.assigneeId);
+  const assignees = users.filter((user) => task.assigneeIds?.includes(user.id));
   const creator = users.find((user) => user.id === task.createdBy);
 
   const handleStatusChange = (newStatus: TaskStatus) => {
@@ -128,23 +128,27 @@ export function TaskDetailsDialog({ task, open, onOpenChange }: TaskDetailsDialo
                 </div>
               )}
 
-              {assignee && (
+              {assignees && assignees.length > 0 && (
                 <div className="pt-2">
                   <h4 className="font-medium mb-3 flex items-center gap-2">
                     <User className="w-5 h-5" />
-                    Assigned To
+                    Assigned To ({assignees.length})
                   </h4>
-                  <div className="flex items-center gap-3 p-3 border rounded-lg">
-                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                      <User className="w-5 h-5 text-blue-600" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium">{assignee.fullName}</p>
-                      <p className="text-sm text-gray-600">{assignee.workEmail}</p>
-                    </div>
-                    <Badge variant="outline" className="capitalize">
-                      {assignee.role.replace('_', ' ')}
-                    </Badge>
+                  <div className="space-y-2">
+                    {assignees.map((assignee) => (
+                      <div key={assignee.id} className="flex items-center gap-3 p-3 border rounded-lg">
+                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                          <User className="w-5 h-5 text-blue-600" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-medium">{assignee.fullName}</p>
+                          <p className="text-sm text-gray-600">{assignee.workEmail}</p>
+                        </div>
+                        <Badge variant="outline" className="capitalize">
+                          {assignee.role.replace('_', ' ')}
+                        </Badge>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}

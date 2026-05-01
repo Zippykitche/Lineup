@@ -80,11 +80,50 @@ export class RestAdapter implements IApiAdapter {
       id: task.id,
       title: task.title,
       dueDate: task.due_date || task.dueDate,
-      assigneeId: task.assignee_id || task.assigneeId,
+      assigneeIds: task.assignee_ids || task.assigneeIds || [],
       status: task.status,
       priority: task.priority,
       createdBy: task.created_by || task.createdBy,
       description: task.description,
+    };
+  }
+
+  async suspendUser(uid: string): Promise<ApiResponse<User>> {
+    const response = await this.request<any>(`/auth/users/${uid}/suspend`, {
+      method: 'PATCH',
+    });
+    return {
+      ...response,
+      data: this.mapUser(response.data?.data || response.data)
+    };
+  }
+
+  async deleteUser(uid: string): Promise<ApiResponse<void>> {
+    return this.request<void>(`/auth/users/${uid}`, { method: 'DELETE' });
+  }
+
+  async updateUserRole(uid: string, role: string): Promise<ApiResponse<User>> {
+    const response = await this.request<any>(`/auth/users/${uid}/role`, {
+      method: 'PATCH',
+      body: JSON.stringify({ role }),
+    });
+    return {
+      ...response,
+      data: this.mapUser(response.data?.data || response.data)
+    };
+  }
+
+  async getPublicEvents(): Promise<ApiResponse<Event[]>> {
+    const response = await this.request<any>('/events/public');
+    const events = Array.isArray(response.data?.data) 
+      ? response.data.data.map((e: any) => this.mapEvent(e))
+      : Array.isArray(response.data)
+      ? response.data.map((e: any) => this.mapEvent(e))
+      : [];
+    
+    return {
+      ...response,
+      data: events
     };
   }
 
@@ -273,22 +312,28 @@ export class RestAdapter implements IApiAdapter {
   async createTask(task: Partial<Task>): Promise<ApiResponse<Task>> {
     const response = await this.request<any>('/tasks', {
       method: 'POST',
-      body: JSON.stringify(task),
+      body: JSON.stringify({
+        ...task,
+        assigneeIds: task.assigneeIds || [],
+      }),
     });
     return {
       ...response,
-      data: this.mapTask(response.data)
+      data: this.mapTask(response.data?.data || response.data)
     };
   }
 
   async updateTask(id: string, task: Partial<Task>): Promise<ApiResponse<Task>> {
     const response = await this.request<any>(`/tasks/${id}`, {
       method: 'PATCH',
-      body: JSON.stringify(task),
+      body: JSON.stringify({
+        ...task,
+        assigneeIds: task.assigneeIds || undefined,
+      }),
     });
     return {
       ...response,
-      data: this.mapTask(response.data)
+      data: this.mapTask(response.data?.data || response.data)
     };
   }
 
