@@ -21,13 +21,14 @@ interface EditTaskFormProps {
 }
 
 export function EditTaskForm({ task, onClose, onSave }: EditTaskFormProps) {
-  const { users, updateTask } = useApp();
+  const { users, events, updateTask } = useApp();
   const [title, setTitle] = useState(task.title);
   const [dueDate, setDueDate] = useState(task.dueDate);
   const [assigneeId, setAssigneeId] = useState(task.assigneeId);
   const [status, setStatus] = useState<TaskStatus>(task.status);
   const [priority, setPriority] = useState<TaskPriority>(task.priority);
   const [description, setDescription] = useState(task.description || '');
+  const [selectedEventId, setSelectedEventId] = useState<string>(task.eventId || '');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -42,6 +43,7 @@ export function EditTaskForm({ task, onClose, onSave }: EditTaskFormProps) {
         status,
         priority,
         description,
+        eventId: selectedEventId || null,
       });
 
       toast.success('Task updated successfully');
@@ -135,6 +137,23 @@ export function EditTaskForm({ task, onClose, onSave }: EditTaskFormProps) {
           onChange={(e) => setDescription(e.target.value)}
           rows={3}
         />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="edit-event">Link to Event (Optional)</Label>
+        <Select value={selectedEventId} onValueChange={setSelectedEventId}>
+          <SelectTrigger id="edit-event">
+            <SelectValue placeholder="Select an event..." />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">No event (Independent task)</SelectItem>
+            {events.map((event) => (
+              <SelectItem key={event.id} value={event.id}>
+                {event.title} ({event.date})
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="flex justify-end gap-2 pt-4 border-t sticky bottom-0 bg-white">

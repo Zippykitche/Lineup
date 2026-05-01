@@ -24,6 +24,7 @@ export interface Event {
   status: EventStatus;
   outputType: OutputType;
   type?: EventType;
+  category?: string;
 }
 
 export interface User {
@@ -47,6 +48,7 @@ export interface Task {
   priority: TaskPriority;
   createdBy: string;
   description?: string;
+  eventId?: string | null;
 }
 
 export interface Notification {

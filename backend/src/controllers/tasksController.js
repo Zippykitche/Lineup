@@ -10,7 +10,7 @@ import { createNotification } from '../services/notificationService.js';
 
 // Create task - Editor and Super Admin
 export const createTaskHandler = async (req, res) => {
-  const { title, dueDate, assigneeIds, status = 'Pending', priority = 'Medium', description } = req.body;
+  const { title, dueDate, assigneeIds, status = 'Pending', priority = 'Medium', description, eventId } = req.body;
 
   if (!title || !dueDate || !assigneeIds || !Array.isArray(assigneeIds)) {
     return res.status(400).json({ message: 'Missing required fields: title, dueDate, assigneeIds (array)' });
@@ -24,6 +24,7 @@ export const createTaskHandler = async (req, res) => {
       status,
       priority,
       description: description || '',
+      eventId: eventId || null,
     };
 
     const result = await createTask(taskData, req.user.uid);

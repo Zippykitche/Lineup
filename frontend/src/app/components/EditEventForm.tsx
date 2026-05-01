@@ -4,6 +4,13 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Event } from '../types';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from './ui/select';
 
 interface Props {
   event: Event;
@@ -19,6 +26,7 @@ export function EditEventForm({ event, onClose, onSave }: Props) {
   const [startTime, setStartTime] = useState(event.startTime);
   const [endTime, setEndTime] = useState(event.endTime);
   const [description, setDescription] = useState(event.description);
+  const [category, setCategory] = useState(event.category || 'General');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,6 +37,7 @@ export function EditEventForm({ event, onClose, onSave }: Props) {
     startTime,
     endTime,
     description,
+    category,
   });
 
     onSave();
@@ -72,6 +81,23 @@ export function EditEventForm({ event, onClose, onSave }: Props) {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
+      </div>
+
+      <div>
+        <Label>Category</Label>
+        <Select value={category} onValueChange={setCategory}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="General">General</SelectItem>
+            <SelectItem value="News">News</SelectItem>
+            <SelectItem value="Sports">Sports</SelectItem>
+            <SelectItem value="Entertainment">Entertainment</SelectItem>
+            <SelectItem value="Politics">Politics</SelectItem>
+            <SelectItem value="Business">Business</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="flex justify-end gap-2">

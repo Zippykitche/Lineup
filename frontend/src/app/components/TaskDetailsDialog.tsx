@@ -29,7 +29,7 @@ interface TaskDetailsDialogProps {
 }
 
 export function TaskDetailsDialog({ task, open, onOpenChange }: TaskDetailsDialogProps) {
-  const { currentUser, users, updateTask, deleteTask } = useApp();
+  const { currentUser, users, events, updateTask, deleteTask } = useApp();
   const [isEditing, setIsEditing] = useState(false);
   const [status, setStatus] = useState<TaskStatus>(task.status);
 
@@ -125,6 +125,28 @@ export function TaskDetailsDialog({ task, open, onOpenChange }: TaskDetailsDialo
                 <div className="pt-2">
                   <h4 className="font-medium mb-2">Description</h4>
                   <p className="text-gray-700">{task.description}</p>
+                </div>
+              )}
+
+              {task.eventId && (
+                <div className="pt-2">
+                  <h4 className="font-medium mb-2">Linked Event</h4>
+                  {(() => {
+                    const linkedEvent = events.find(e => e.id === task.eventId);
+                    return linkedEvent ? (
+                      <div className="border rounded-lg p-3 bg-blue-50">
+                        <div className="font-medium text-blue-900">{linkedEvent.title}</div>
+                        <div className="text-sm text-blue-700 mt-1">
+                          {format(parseISO(linkedEvent.date), 'MMM d, yyyy')} • {linkedEvent.startTime} - {linkedEvent.endTime}
+                        </div>
+                        <Badge variant="outline" className="mt-2 text-xs">
+                          {linkedEvent.outputType}
+                        </Badge>
+                      </div>
+                    ) : (
+                      <div className="text-sm text-gray-500">Event not found</div>
+                    );
+                  })()}
                 </div>
               )}
 

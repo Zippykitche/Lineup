@@ -14,6 +14,7 @@ const normalizeEvent = (eventData = {}, id = null) => {
     status: eventData.status || null,
     outputType: eventData.outputType || eventData.output_type || null,
     type: eventData.type || null,
+    category: eventData.category || 'General',
     createdAt: eventData.createdAt || eventData.created_at || null,
     updatedAt: eventData.updatedAt || eventData.updated_at || null,
   };
@@ -51,6 +52,7 @@ export const createEvent = async (req, res) => {
     attendeeIds,
     assignees,
     type: eventType,
+    category,
   } = req.body;
 
   const actualStartTime = startTime || start_time;
@@ -81,6 +83,7 @@ export const createEvent = async (req, res) => {
       createdBy: req.user.uid,
       outputType: type,
       type: eventType || 'general',
+      category: category || 'General',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };

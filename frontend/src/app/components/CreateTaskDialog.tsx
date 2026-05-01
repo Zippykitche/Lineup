@@ -28,13 +28,14 @@ interface CreateTaskDialogProps {
 }
 
 export function CreateTaskDialog({ open, onOpenChange }: CreateTaskDialogProps) {
-  const { currentUser, users, addTask } = useApp();
+  const { currentUser, users, events, addTask } = useApp();
   const [title, setTitle] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [assigneeIds, setAssigneeIds] = useState<string[]>([]);
   const [status, setStatus] = useState<TaskStatus>('Pending');
   const [priority, setPriority] = useState<TaskPriority>('Medium');
   const [description, setDescription] = useState('');
+  const [selectedEventId, setSelectedEventId] = useState<string>('');
 
   const canAssignTasks =
     currentUser?.role === 'super_admin' || currentUser?.role === 'editor';
@@ -69,6 +70,7 @@ export function CreateTaskDialog({ open, onOpenChange }: CreateTaskDialogProps) 
         priority,
         description,
         createdBy: currentUser?.id || '',
+        eventId: selectedEventId || null,
       });
 
       toast.success('Task created and assigned successfully');
@@ -87,6 +89,7 @@ export function CreateTaskDialog({ open, onOpenChange }: CreateTaskDialogProps) 
     setStatus('Pending');
     setPriority('Medium');
     setDescription('');
+    setSelectedEventId('');
   };
 
   const assignableUsers = users.filter((u) => u.role === 'assignee' && !u.suspended);
@@ -172,6 +175,23 @@ export function CreateTaskDialog({ open, onOpenChange }: CreateTaskDialogProps) 
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="event">Link to Event (Optional)</Label>
+            <Select value={selectedEventId} onValueChange={setSelectedEventId}>
+              <SelectTrigger id="event">
+                <SelectValue placeholder="Select an event..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">No event (Independent task)</SelectItem>
+                {events.map((event) => (
+                  <SelectItem key={event.id} value={event.id}>
+                    {event.title} ({event.date})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex justify-end gap-2 pt-4">

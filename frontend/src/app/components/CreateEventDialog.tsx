@@ -38,6 +38,7 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
   const [selectedAttendees, setSelectedAttendees] = useState<string[]>([]);
   const [status, setStatus] = useState<EventStatus>('Planned');
   const [outputType, setOutputType] = useState<OutputType>('TV');
+  const [category, setCategory] = useState('General');
 
   const canCreateEvent =
     currentUser?.role === 'super_admin' || currentUser?.role === 'editor';
@@ -65,7 +66,8 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
         attendeeIds: selectedAttendees,
         createdBy: currentUser?.id || '',
         status,
-        outputType
+        outputType,
+        category
       });
 
       toast.success('Event created successfully');
@@ -86,6 +88,7 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
     setSelectedAttendees([]);
     setStatus('Planned');
     setOutputType('TV');
+    setCategory('General');
   };
 
   const toggleAttendee = (userId: string) => {
@@ -202,19 +205,36 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
             </Select>
           </div>
           <div className="space-y-2">
-        <Label htmlFor="outputType">Output Type</Label>
-        <Select value={outputType} onValueChange={(v) => setOutputType(v as OutputType)}>
-          <SelectTrigger id="outputType">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="TV">TV</SelectItem>
-            <SelectItem value="Radio">Radio</SelectItem>
-            <SelectItem value="Social">Social</SelectItem>
-            <SelectItem value="Web">Web</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+            <Label htmlFor="outputType">Output Type</Label>
+            <Select value={outputType} onValueChange={(v) => setOutputType(v as OutputType)}>
+              <SelectTrigger id="outputType">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="TV">TV</SelectItem>
+                <SelectItem value="Radio">Radio</SelectItem>
+                <SelectItem value="Social">Social</SelectItem>
+                <SelectItem value="Web">Web</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="category">Category</Label>
+            <Select value={category} onValueChange={setCategory}>
+              <SelectTrigger id="category">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="General">General</SelectItem>
+                <SelectItem value="News">News</SelectItem>
+                <SelectItem value="Sports">Sports</SelectItem>
+                <SelectItem value="Entertainment">Entertainment</SelectItem>
+                <SelectItem value="Politics">Politics</SelectItem>
+                <SelectItem value="Business">Business</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
           <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
