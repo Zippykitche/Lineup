@@ -8,7 +8,7 @@ const run = async () => {
   try {
     // Login as Super Admin
     console.log('Logging in as Super Admin...');
-    const loggedIn = await loginUser('superadmin@kbc.co.ke', 'Admin1234!');
+    const loggedIn = await loginUser('superadmin@kbc.co.ke', 'Admin1234');
     const token = loggedIn.idToken;
     console.log('✅ SUPER ADMIN LOGGED IN');
 

@@ -1,7 +1,7 @@
 import { adminAuth as auth, db } from './src/config/firebase.js';
 
 const email = 'superadmin@kbc.co.ke';
-const password = 'Admin1234';
+const password = process.env.SUPERADMIN_PASSWORD || 'Admin1234';
 
 const seedAdmin = async () => {
   try {
