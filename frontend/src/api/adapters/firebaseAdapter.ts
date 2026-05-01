@@ -1,52 +1,172 @@
 import { IApiAdapter } from './apiAdapter';
-import { User, Event, Task, Notification } from '../../app/types';
+import { User, Event, Task, Notification, Role } from '../../app/types';
 import { ApiResponse, PaginatedResponse, QueryParams, AuthResponse, AppError } from '../types';
+import { auth } from '../config/firebaseClient';
+import {
+  signInWithEmailAndPassword,
+  signOut,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+  onAuthStateChanged,
+  User as FirebaseUser
+} from 'firebase/auth';
 
 /**
  * Firebase Adapter
- * Placeholder for future Firebase implementation.
- * This is where you would integrate firebase/auth and firebase/firestore.
+ * Implements Firebase Authentication and Firestore integration.
  */
 export class FirebaseAdapter implements IApiAdapter {
   constructor(config: any) {
-    // Initialize Firebase here
-    console.log('Firebase initialized with', config);
+    // Firebase is already initialized in firebaseClient.ts
+    console.log('Firebase Adapter initialized');
   }
 
   // Auth
   async login(email: string, password: string): Promise<AuthResponse> {
-    // const res = await signInWithEmailAndPassword(auth, email, password);
-    throw new AppError('Firebase login not implemented', 'NOT_IMPLEMENTED', 501);
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const token = await userCredential.user.getIdToken();
+
+      return {
+        user: {
+          id: userCredential.user.uid,
+          fullName: userCredential.user.displayName || '',
+          workEmail: userCredential.user.email || '',
+          role: 'assignee' as const, // Default role, will be updated by backend
+          department: '',
+          phone: '',
+        },
+        token,
+        refreshToken: '', // Firebase handles refresh internally
+      };
+    } catch (error: any) {
+      throw new AppError(error.message || 'Login failed', 'AUTH_ERROR', 401);
+    }
   }
 
   async logout(): Promise<void> {
-    // await signOut(auth);
+    try {
+      await signOut(auth);
+    } catch (error: any) {
+      throw new AppError(error.message || 'Logout failed', 'AUTH_ERROR', 500);
+    }
   }
 
   async register(user: Partial<User> & { password?: string }): Promise<ApiResponse<User>> {
-    throw new AppError('Firebase register not implemented', 'NOT_IMPLEMENTED', 501);
+    if (!user.password) {
+      throw new AppError('Password is required for registration', 'VALIDATION_ERROR', 400);
+    }
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, user.workEmail!, user.password);
+      const token = await userCredential.user.getIdToken();
+
+      const newUser: User = {
+        id: userCredential.user.uid,
+        fullName: user.fullName || userCredential.user.displayName || '',
+        workEmail: userCredential.user.email || '',
+        role: 'assignee' as const,
+        department: user.department || '',
+        phone: user.phone || '',
+      };
+
+      return {
+        data: newUser,
+        message: 'User registered successfully',
+        status: 201,
+      };
+    } catch (error: any) {
+      throw new AppError(error.message || 'Registration failed', 'AUTH_ERROR', 400);
+    }
   }
 
   async getCurrentUser(): Promise<User | null> {
-    // return auth.currentUser;
-    return null;
+    try {
+      const currentUser = auth.currentUser;
+      if (!currentUser) return null;
+
+      // Get Firebase ID token
+      const token = await currentUser.getIdToken();
+
+      // Call backend /auth/me to get full user profile with role
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/auth/me`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        console.warn('Failed to fetch user profile from backend');
+        // Fallback to basic Firebase user info
+        return {
+          id: currentUser.uid,
+          fullName: currentUser.displayName || '',
+          workEmail: currentUser.email || '',
+          role: 'assignee' as const,
+          department: '',
+          phone: '',
+        };
+      }
+
+      const data = await response.json();
+      return {
+        id: data.data.id || currentUser.uid,
+        fullName: data.data.fullName || currentUser.displayName || '',
+        workEmail: data.data.workEmail || currentUser.email || '',
+        role: (data.data.role as Role) || 'assignee',
+        department: data.data.department || '',
+        phone: data.data.phone || '',
+      };
+    } catch (error) {
+      console.error('Error getting current user:', error);
+      return null;
+    }
   }
 
   async refreshToken(token: string): Promise<AuthResponse> {
-    throw new AppError('Firebase refresh not implemented', 'NOT_IMPLEMENTED', 501);
+    // Firebase handles token refresh automatically
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      throw new AppError('No user logged in', 'AUTH_ERROR', 401);
+    }
+
+    const newToken = await currentUser.getIdToken(true); // Force refresh
+
+    return {
+      user: {
+        id: currentUser.uid,
+        fullName: currentUser.displayName || '',
+        workEmail: currentUser.email || '',
+        role: 'assignee' as const,
+        department: '',
+        phone: '',
+      },
+      token: newToken,
+      refreshToken: '',
+    };
   }
 
   async forgotPassword(email: string): Promise<ApiResponse<void>> {
-    throw new AppError('Firebase forgotPassword not implemented', 'NOT_IMPLEMENTED', 501);
+    try {
+      await sendPasswordResetEmail(auth, email);
+      return {
+        data: undefined,
+        message: 'Password reset email sent',
+        status: 200,
+      };
+    } catch (error: any) {
+      throw new AppError(error.message || 'Failed to send password reset email', 'AUTH_ERROR', 400);
+    }
   }
 
-  // Users
+  // Users - These would need Firestore implementation
   async getUsers(params?: QueryParams): Promise<PaginatedResponse<User>> {
-    throw new AppError('Firebase getUsers not implemented', 'NOT_IMPLEMENTED', 501);
+    throw new AppError('Firebase getUsers not implemented - use REST adapter for user management', 'NOT_IMPLEMENTED', 501);
   }
 
   async getUserById(id: string): Promise<ApiResponse<User>> {
-    throw new AppError('Firebase getUserById not implemented', 'NOT_IMPLEMENTED', 501);
+    throw new AppError('Firebase getUserById not implemented - use REST adapter for user management', 'NOT_IMPLEMENTED', 501);
   }
 
   // Events

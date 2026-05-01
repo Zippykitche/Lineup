@@ -1,5 +1,5 @@
 import { adminAuth } from './config/firebase.js';
-import { getUserRole } from './userService.js';
+import { getUserRole } from './services/userService.js';
 
 /**
  * Verifies the Firebase ID token and returns the user with their role.

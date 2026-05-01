@@ -90,31 +90,7 @@ export class RestAdapter implements IApiAdapter {
 
   // --- Auth ---
   async login(email: string, password: string): Promise<AuthResponse> {
-    const response = await this.request<any>('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    });
-
-    const { token, uid, fullName, role } = response.data;
-    localStorage.setItem('token', token);
-
-    try {
-      // Fetch full user data after login
-      const userResponse = await this.request<any>('/auth/me');
-      return {
-        user: this.mapUser(userResponse.data),
-        token,
-        refreshToken: '', 
-      };
-    } catch (error) {
-      console.warn('Failed to fetch user profile, using basic info from login:', error);
-      // Fallback: return a basic user object if /me fails (e.g. token verification lag)
-      return {
-        user: this.mapUser({ uid, email, fullName, role }),
-        token,
-        refreshToken: '',
-      };
-    }
+    throw new AppError('Login should be handled by Firebase Auth adapter', 'NOT_SUPPORTED', 501);
   }
 
   async logout(): Promise<void> {

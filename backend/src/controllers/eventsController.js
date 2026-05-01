@@ -13,6 +13,7 @@ const normalizeEvent = (eventData = {}, id = null) => {
     createdBy: eventData.createdBy || eventData.created_by || null,
     status: eventData.status || null,
     outputType: eventData.outputType || eventData.output_type || null,
+    type: eventData.type || null,
     createdAt: eventData.createdAt || eventData.created_at || null,
     updatedAt: eventData.updatedAt || eventData.updated_at || null,
   };
@@ -49,6 +50,7 @@ export const createEvent = async (req, res) => {
     output_type,
     attendeeIds,
     assignees,
+    type: eventType,
   } = req.body;
 
   const actualStartTime = startTime || start_time;
@@ -78,6 +80,7 @@ export const createEvent = async (req, res) => {
       attendeeIds: attendees,
       createdBy: req.user.uid,
       outputType: type,
+      type: eventType || 'general',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -96,6 +99,20 @@ export const createEvent = async (req, res) => {
     res.status(201).json({ data: event, status: 201 });
   } catch (err) {
     console.error('❌ CREATE EVENT ERROR:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Get public events (e.g., holidays)
+export const getPublicEvents = async (req, res) => {
+  try {
+    const snapshot = await db.collection('events')
+      .where('type', '==', 'holiday')
+      .get();
+    const events = snapshot.docs.map(doc => normalizeEvent(doc.data(), doc.id));
+    res.json({ data: events, status: 200 });
+  } catch (err) {
+    console.error('Get public events error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };

@@ -107,6 +107,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setIsLoading(true);
       const response = await api.login(email, password);
       setCurrentUser(response.user);
+      localStorage.setItem('token', response.token);
       return true;
     } catch (error) {
       console.error("Login failed:", error);
@@ -122,6 +123,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setEvents([]);
     setTasks([]);
     setNotifications([]);
+    localStorage.removeItem('token');
   };
 
   const register = async (user: Partial<User> & { password?: string }): Promise<boolean> => {

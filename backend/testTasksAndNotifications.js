@@ -3,7 +3,7 @@ import 'dotenv/config';
 import { adminAuth } from './src/config/firebase.js';
 import { loginUser } from './src/auth.js';
 
-const BASE_URL = 'https://lineup-backend-1nyx.onrender.com/api';
+const BASE_URL = 'http://localhost:5000/api';
 
 // Test data
 let authToken = '';

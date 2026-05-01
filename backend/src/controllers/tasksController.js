@@ -10,17 +10,17 @@ import { createNotification } from '../services/notificationService.js';
 
 // Create task - Editor and Super Admin
 export const createTaskHandler = async (req, res) => {
-  const { title, dueDate, assigneeId, status = 'Pending', priority = 'Medium', description } = req.body;
+  const { title, dueDate, assigneeIds, status = 'Pending', priority = 'Medium', description } = req.body;
 
-  if (!title || !dueDate || !assigneeId) {
-    return res.status(400).json({ message: 'Missing required fields: title, dueDate, assigneeId' });
+  if (!title || !dueDate || !assigneeIds || !Array.isArray(assigneeIds)) {
+    return res.status(400).json({ message: 'Missing required fields: title, dueDate, assigneeIds (array)' });
   }
 
   try {
     const taskData = {
       title,
       dueDate,
-      assigneeId,
+      assigneeIds,
       status,
       priority,
       description: description || '',
@@ -32,12 +32,14 @@ export const createTaskHandler = async (req, res) => {
       return res.status(500).json({ message: 'Failed to create task' });
     }
 
-    // Notify assignee
-    await createNotification({
-      userId: assigneeId,
-      message: `New task assigned: ${title} (Due: ${dueDate})`,
-      type: 'task',
-    });
+    // Notify assignees
+    for (const assigneeId of assigneeIds) {
+      await createNotification({
+        userId: assigneeId,
+        message: `New task assigned: ${title} (Due: ${dueDate})`,
+        type: 'task',
+      });
+    }
 
     res.status(201).json({ data: result, message: 'Task created successfully', status: 201 });
   } catch (err) {
@@ -49,6 +51,11 @@ export const createTaskHandler = async (req, res) => {
 // Get all tasks with pagination and filters
 export const getAllTasks = async (req, res) => {
   try {
+    // Admin and Editor only check
+    if (req.user.role !== 'super_admin' && req.user.role !== 'editor') {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+
     const { status, assigneeId, priority, page = 1, limit = 10, search } = req.query;
 
     const filters = {
@@ -131,7 +138,7 @@ export const updateTaskHandler = async (req, res) => {
       }
 
       // Also ensure they are the one assigned to it
-      if (task.assigneeId !== req.user.uid) {
+      if (!task.assigneeIds || !task.assigneeIds.includes(req.user.uid)) {
         return res.status(403).json({ message: 'You can only update your own tasks' });
       }
     }
@@ -221,12 +228,10 @@ export const updateTaskStatus = async (req, res) => {
       return res.status(404).json({ message: 'Task not found' });
     }
 
-    // Check if the user is the assignee or an editor/admin
-    // For now, we'll allow the request if the token is valid, 
-    // but a stricter check would be:
-    // if (req.user.role === 'assignee' && task.assigneeId !== req.user.uid) {
-    //   return res.status(403).json({ message: 'Not authorized to update this task status' });
-    // }
+    // Strict check: only assigned users can update their own status
+    if (req.user.role === 'assignee' && (!task.assigneeIds || !task.assigneeIds.includes(req.user.uid))) {
+      return res.status(403).json({ message: 'Not authorized to update this task status' });
+    }
 
     const result = await updateTask(id, { status });
 

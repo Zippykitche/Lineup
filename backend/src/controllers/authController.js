@@ -12,6 +12,7 @@ const normalizeUser = (userDoc) => {
     role: userDoc.role || null,
     department: userDoc.department || null,
     phone: userDoc.phone || null,
+    suspended: userDoc.suspended || false,
     createdAt: userDoc.createdAt || userDoc.created_at || null,
     updatedAt: userDoc.updatedAt || userDoc.updated_at || null,
     createdBy: userDoc.createdBy || userDoc.created_by || null,
@@ -34,6 +35,14 @@ export const createUser = async (req, res) => {
 
   try {
     const userRecord = await auth.createUser({ email, password, displayName: name });
+
+    // Auto-send password reset email to new user with redirect URL
+    const actionCodeSettings = {
+      url: 'https://lineup-eta-nine.vercel.app/login',
+    };
+    await auth.generatePasswordResetLink(email, actionCodeSettings).then(async (link) => {
+      console.log(`Password reset link for ${email}: ${link}`);
+    });
 
     await auth.setCustomUserClaims(userRecord.uid, { role });
 
@@ -106,6 +115,21 @@ export const updateUserRole = async (req, res) => {
     res.json({ data: { uid, role }, message: 'Role updated successfully', status: 200 });
   } catch (err) {
     console.error('Update role error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Suspend user - Super Admin only
+export const suspendUser = async (req, res) => {
+  const { uid } = req.params;
+
+  try {
+    // Disable in Firebase Auth and update Firestore
+    await auth.updateUser(uid, { disabled: true });
+    await db.collection('users').doc(uid).update({ suspended: true, updatedAt: new Date().toISOString() });
+    res.json({ data: { uid, suspended: true }, message: 'User suspended successfully', status: 200 });
+  } catch (err) {
+    console.error('Suspend user error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };

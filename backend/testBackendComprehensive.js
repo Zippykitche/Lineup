@@ -3,7 +3,7 @@ import fetch from 'node-fetch';
 import { adminAuth, db } from './src/config/firebase.js';
 import { loginUser } from './src/auth.js';
 
-const BASE_URL = 'https://lineup-backend-1nyx.onrender.com/api';
+const BASE_URL = 'http://localhost:5000/api';
 
 let testData = {
   editorToken: '',
@@ -110,7 +110,7 @@ async function testTaskOperations() {
     const createRes = await apiCall('POST', '/tasks', {
       title: 'Q2 Report Generation',
       dueDate: '2026-05-20',
-      assigneeId: testData.assigneeUserId,
+      assigneeIds: [testData.assigneeUserId],
       priority: 'High',
       status: 'Pending',
       description: 'Generate quarterly report for Q2',
