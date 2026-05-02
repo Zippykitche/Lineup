@@ -16,22 +16,33 @@ export class RestAdapter implements IApiAdapter {
 
   private async request<T>(path: string, options?: RequestInit): Promise<ApiResponse<T>> {
     const token = localStorage.getItem('token');
-    
-    const response = await fetch(`${this.baseUrl}${path}`, {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': token ? `Bearer ${token}` : '',
-        ...options?.headers,
-      },
-    });
+
+    let response: Response;
+    try {
+      response = await fetch(`${this.baseUrl}${path}`, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : '',
+          ...options?.headers,
+        },
+      });
+    } catch (error: any) {
+      throw new AppError(
+        `Unable to connect to backend server at ${this.baseUrl}. Please make sure the backend is running and reachable.`,
+        'NETWORK_ERROR',
+        503,
+        error
+      );
+    }
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new AppError(
         errorData.message || 'API Request failed',
         errorData.code || 'API_ERROR',
-        response.status
+        response.status,
+        errorData
       );
     }
 

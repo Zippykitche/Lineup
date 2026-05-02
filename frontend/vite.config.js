@@ -4,5 +4,14 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  envPrefix: 'NEXT_PUBLIC_',
+  envPrefix: ['VITE_', 'NEXT_PUBLIC_'],
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
 })
