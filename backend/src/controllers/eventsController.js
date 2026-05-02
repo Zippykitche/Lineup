@@ -248,35 +248,4 @@ export const deleteEvent = async (req, res) => {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
   }
-};
-
-// Get all events - Editor and Super Admin
-export const getAllEvents = async (req, res) => {
-  try {
-    const snapshot = await db.collection('events')
-      .orderBy('date')
-      .get();
-
-    const events = snapshot.docs.map(doc => normalizeEvent(doc.data(), doc.id));
-    res.json({ data: events, status: 200 });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
-  }
-};
-
-// Get public events - Accessible to everyone
-export const getPublicEvents = async (req, res) => {
-  try {
-    const snapshot = await db.collection('events')
-      .where('isPublic', '==', true)
-      .orderBy('date')
-      .get();
-
-    const events = snapshot.docs.map(doc => normalizeEvent(doc.data(), doc.id));
-    res.json({ data: events, status: 200 });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
-  }
-};
+}
