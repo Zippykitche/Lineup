@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useApp } from '../context/AppContext';
+import { getErrorMessage } from '../../api/errorUtils';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -38,7 +39,7 @@ export function LoginPage() {
         setIsLoading(false);
       }
     } catch (err) {
-      setError('An unexpected error occurred. Please try again.');
+      setError(getErrorMessage(err, 'An unexpected error occurred. Please try again.'));
       setIsLoading(false);
     }
   };
@@ -58,8 +59,8 @@ export function LoginPage() {
       await forgotPassword(email);
       setIsLoading(false);
       setView('forgot-success');
-    } catch (err: any) {
-      setError(err.message || 'Failed to send reset link. Please try again.');
+    } catch (err) {
+      setError(getErrorMessage(err, 'Failed to send reset link. Please try again.'));
       setIsLoading(false);
     }
   };

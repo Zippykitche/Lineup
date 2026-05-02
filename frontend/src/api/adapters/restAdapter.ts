@@ -129,7 +129,28 @@ export class RestAdapter implements IApiAdapter {
 
   // --- Auth ---
   async login(email: string, password: string): Promise<AuthResponse> {
-    throw new AppError('Login should be handled by Firebase Auth adapter', 'NOT_SUPPORTED', 501);
+    const response = await this.request<any>('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = response.data;
+    if (!data || !data.token || !data.uid) {
+      throw new AppError('Login failed. Invalid response from server.', 'AUTH_ERROR', 502);
+    }
+
+    return {
+      user: this.mapUser({
+        uid: data.uid,
+        email: data.email,
+        fullName: data.fullName || data.displayName,
+        role: data.role || 'assignee',
+        department: data.department,
+        phone: data.phone,
+      }),
+      token: data.token,
+      refreshToken: data.refreshToken || '',
+    };
   }
 
   async logout(): Promise<void> {

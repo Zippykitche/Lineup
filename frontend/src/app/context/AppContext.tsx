@@ -7,6 +7,7 @@ import {
 } from "react";
 import { User, Event, Task, Notification } from "../types";
 import { api } from "../../api";
+import { toAppError } from "../../api/errorUtils";
 
 interface AppContextType {
   currentUser: User | null;
@@ -104,8 +105,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password?: string): Promise<boolean> => {
     try {
       if (!password) {
-        console.error("Login attempted without password");
-        return false;
+        throw toAppError('Password is required.', 'Password is required.', 'VALIDATION_ERROR', 400);
       }
       setIsLoading(true);
       const response = await api.login(email, password);
@@ -113,8 +113,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       localStorage.setItem('token', response.token);
       return true;
     } catch (error) {
-      console.error("Login failed:", error);
-      return false;
+      const appError = toAppError(error, 'Login failed. Please check your credentials and try again.', 'LOGIN_ERROR', 401);
+      console.error('Login failed:', appError);
+      throw appError;
     } finally {
       setIsLoading(false);
     }
@@ -149,8 +150,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       await api.forgotPassword(email);
       return true;
     } catch (error) {
-      console.error("Forgot password failed:", error);
-      return false;
+      const appError = toAppError(error, 'Failed to send password reset email. Please try again.', 'FORGOT_PASSWORD_ERROR', 400);
+      console.error('Forgot password failed:', appError);
+      throw appError;
     } finally {
       setIsLoading(false);
     }
