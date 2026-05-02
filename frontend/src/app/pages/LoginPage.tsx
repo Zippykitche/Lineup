@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { useApp } from '../context/AppContext';
 import { getErrorMessage } from '../../api/errorUtils';
@@ -7,6 +7,7 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Shield, ArrowRight, CheckCircle2, Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import logo from '../../assets/KBC-PODCASTS-LOGO-1.png';
+import { LoadingSpinner } from '../components/ui/loading-spinner';
 
 export function LoginPage() {
   const [view, setView] = useState<'login' | 'forgot-password' | 'forgot-success'>('login');
@@ -15,8 +16,26 @@ export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [countdown, setCountdown] = useState(3600); // 1 hour in seconds
   const { login, forgotPassword } = useApp();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (view === 'forgot-success' && countdown > 0) {
+      interval = setInterval(() => {
+        setCountdown((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [view, countdown]);
+
+  const formatTime = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -160,7 +179,14 @@ export function LoginPage() {
                     disabled={isLoading}
                     className="w-full h-12 mt-2 bg-linear-to-r from-blue-600 to-blue-800 hover:from-blue-500 hover:to-blue-600 text-white font-medium border border-white/10 shadow-lg shadow-blue-900/20 transition-all duration-300"
                   >
-                    {isLoading ? 'Signing in...' : 'Sign In'}
+                    {isLoading ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <LoadingSpinner size="sm" />
+                        Signing in...
+                      </div>
+                    ) : (
+                      'Sign In'
+                    )}
                   </Button>
                 </form>
               </>
@@ -230,6 +256,11 @@ export function LoginPage() {
                   <p className="text-blue-300 text-sm leading-relaxed max-w-xs mx-auto">
                     We've sent a password reset link to <span className="text-white font-medium">{email}</span>. The link will expire in 1 hour.
                   </p>
+                  <div className="mt-4 p-3 bg-blue-950/30 rounded-lg border border-blue-500/20">
+                    <p className="text-blue-200 text-sm font-mono">
+                      Time remaining: <span className="text-white font-bold">{formatTime(countdown)}</span>
+                    </p>
+                  </div>
                 </div>
                 <div className="pt-4">
                   <Button

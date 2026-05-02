@@ -4,6 +4,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Event } from '../types';
+import { toast } from 'sonner';
 import {
   Select,
   SelectContent,
@@ -31,14 +32,25 @@ export function EditEventForm({ event, onClose, onSave }: Props) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!title || !date || !startTime || !endTime) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    // Validate end time is after start time
+    if (startTime && endTime && endTime <= startTime) {
+      toast.error('End time must be after start time');
+      return;
+    }
+
     updateEvent(event.id, {
-    title,
-    date,
-    startTime,
-    endTime,
-    description,
-    category,
-  });
+      title,
+      date,
+      startTime,
+      endTime,
+      description,
+      category,
+    });
 
     onSave();
   };
@@ -70,7 +82,15 @@ export function EditEventForm({ event, onClose, onSave }: Props) {
           <Input
             type="time"
             value={endTime}
-            onChange={(e) => setEndTime(e.target.value)}
+            onChange={(e) => {
+              const newEndTime = e.target.value;
+              if (startTime && newEndTime && newEndTime <= startTime) {
+                toast.error('End time must be after start time');
+                return;
+              }
+              setEndTime(newEndTime);
+            }}
+            min={startTime || undefined}
           />
         </div>
       </div>

@@ -15,6 +15,8 @@ const normalizeEvent = (eventData = {}, id = null) => {
     outputType: eventData.outputType || eventData.output_type || null,
     type: eventData.type || null,
     category: eventData.category || 'General',
+    priority: eventData.priority || 'medium',
+    isPublic: eventData.isPublic || eventData.is_public || false,
     createdAt: eventData.createdAt || eventData.created_at || null,
     updatedAt: eventData.updatedAt || eventData.updated_at || null,
   };
@@ -53,20 +55,38 @@ export const createEvent = async (req, res) => {
     assignees,
     type: eventType,
     category,
+    priority,
+    isPublic,
+    is_public,
   } = req.body;
 
   const actualStartTime = startTime || start_time;
   const actualEndTime = endTime || end_time;
   const type = normalizeOutputType(outputType || output_type);
   const attendees = attendeeIds || assignees || [];
+  const actualPriority = priority || 'medium';
+  const actualIsPublic = isPublic || is_public || false;
 
   const validOutputTypes = ['TV', 'Radio', 'Social', 'Web', 'Video', 'Photo'];
   if (!validOutputTypes.includes(type)) {
     return res.status(400).json({ message: 'Invalid output type' });
   }
 
+  const validPriorities = ['low', 'medium', 'high', 'urgent'];
+  if (!validPriorities.includes(actualPriority)) {
+    return res.status(400).json({ message: 'Invalid priority. Must be one of: low, medium, high, urgent' });
+  }
+
   if (!title || !date || !actualStartTime || !actualEndTime) {
     return res.status(400).json({ message: 'Missing required fields: title, date, startTime, endTime' });
+  }
+
+  // Validate no past dates
+  const eventDate = new Date(date);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  if (eventDate < today) {
+    return res.status(400).json({ message: 'Cannot create events in the past' });
   }
 
   try {
@@ -84,6 +104,8 @@ export const createEvent = async (req, res) => {
       outputType: type,
       type: eventType || 'general',
       category: category || 'General',
+      priority: actualPriority,
+      isPublic: actualIsPublic,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -153,12 +175,31 @@ export const updateEvent = async (req, res) => {
   const { id } = req.params;
 
   try {
+    // Validate priority if provided
+    if (req.body.priority) {
+      const validPriorities = ['low', 'medium', 'high', 'urgent'];
+      if (!validPriorities.includes(req.body.priority)) {
+        return res.status(400).json({ message: 'Invalid priority. Must be one of: low, medium, high, urgent' });
+      }
+    }
+
+    // Validate no past dates if date is being updated
+    if (req.body.date) {
+      const eventDate = new Date(req.body.date);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (eventDate < today) {
+        return res.status(400).json({ message: 'Cannot update events to past dates' });
+      }
+    }
+
     const updatePayload = {
       ...req.body,
       outputType: normalizeOutputType(req.body.outputType || req.body.output_type),
       attendeeIds: req.body.attendeeIds || req.body.assignees || req.body.attendee_ids,
       startTime: req.body.startTime || req.body.start_time,
       endTime: req.body.endTime || req.body.end_time,
+      isPublic: req.body.isPublic !== undefined ? req.body.isPublic : req.body.is_public,
       updatedAt: new Date().toISOString(),
     };
 
@@ -203,6 +244,37 @@ export const deleteEvent = async (req, res) => {
   try {
     await db.collection('events').doc(id).delete();
     res.json({ data: null, message: 'Event deleted successfully', status: 200 });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Get all events - Editor and Super Admin
+export const getAllEvents = async (req, res) => {
+  try {
+    const snapshot = await db.collection('events')
+      .orderBy('date')
+      .get();
+
+    const events = snapshot.docs.map(doc => normalizeEvent(doc.data(), doc.id));
+    res.json({ data: events, status: 200 });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Get public events - Accessible to everyone
+export const getPublicEvents = async (req, res) => {
+  try {
+    const snapshot = await db.collection('events')
+      .where('isPublic', '==', true)
+      .orderBy('date')
+      .get();
+
+    const events = snapshot.docs.map(doc => normalizeEvent(doc.data(), doc.id));
+    res.json({ data: events, status: 200 });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });

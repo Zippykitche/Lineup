@@ -4,6 +4,7 @@ import { useApp } from '../context/AppContext';
 import { Button } from './ui/button';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { Badge } from './ui/badge';
+import { ThemeToggle } from './theme-toggle';
 import {
   Calendar,
   LayoutDashboard,
@@ -60,21 +61,22 @@ export function Layout({ children }: LayoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b sticky top-0 z-10">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
               <img src={logo} alt="KBC Logo" className="h-8 w-auto object-contain" />
               <div>
-                <h1 className="font-semibold text-lg">Lineup</h1>
+                <h1 className="font-semibold text-lg text-gray-900 dark:text-white">Lineup</h1>
               </div>
             </div>
 
             <div className="flex items-center gap-4">
+              <ThemeToggle />
               <div className="text-right hidden sm:block">
-                <p className="text-sm font-medium">{currentUser?.fullName}</p>
-                <p className="text-xs text-gray-600">{formatRole(currentUser?.role)}</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">{currentUser?.fullName}</p>
+                <p className="text-xs text-gray-600 dark:text-gray-400">{formatRole(currentUser?.role)}</p>
               </div>
               <Avatar>
                 <AvatarFallback className="bg-blue-600 text-white">
@@ -101,8 +103,8 @@ export function Layout({ children }: LayoutProps) {
                     onClick={() => navigate(item.path)}
                     className={`w-full flex items-center justify-between gap-3 px-4 py-2.5 rounded-lg transition-colors ${
                       isActive
-                        ? 'bg-blue-50 text-blue-700'
-                        : 'text-gray-700 hover:bg-gray-100'
+                        ? 'bg-blue-50 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
                     }`}
                   >
                     <div className="flex items-center gap-3">

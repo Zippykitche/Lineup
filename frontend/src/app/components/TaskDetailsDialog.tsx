@@ -157,20 +157,47 @@ export function TaskDetailsDialog({ task, open, onOpenChange }: TaskDetailsDialo
                     Assigned To ({assignees.length})
                   </h4>
                   <div className="space-y-2">
-                    {assignees.map((assignee) => (
-                      <div key={assignee.id} className="flex items-center gap-3 p-3 border rounded-lg">
-                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                          <User className="w-5 h-5 text-blue-600" />
+                    {assignees.map((assignee) => {
+                      // Get assignee's other events (excluding the linked event if any)
+                      const assigneeEvents = events.filter(e => 
+                        e.attendeeIds.includes(assignee.id) && 
+                        e.id !== task.eventId &&
+                        new Date(e.date) >= new Date() // Only future events
+                      ).slice(0, 3); // Limit to 3 events
+
+                      return (
+                        <div key={assignee.id} className="border rounded-lg p-3">
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                              <User className="w-4 h-4 text-blue-600" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="font-medium">{assignee.fullName}</p>
+                              <p className="text-sm text-gray-600">{assignee.workEmail}</p>
+                            </div>
+                            <Badge variant="outline" className="capitalize">
+                              {assignee.role.replace('_', ' ')}
+                            </Badge>
+                          </div>
+                          
+                          {assigneeEvents.length > 0 && (
+                            <div className="mt-3 pt-3 border-t">
+                              <p className="text-sm font-medium text-gray-700 mb-2">Upcoming Events:</p>
+                              <div className="space-y-1">
+                                {assigneeEvents.map((event) => (
+                                  <div key={event.id} className="text-xs text-gray-600 bg-gray-50 rounded px-2 py-1">
+                                    <span className="font-medium">{event.title}</span>
+                                    <span className="ml-2">
+                                      {format(parseISO(event.date), 'MMM d')} • {event.startTime}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
-                        <div className="flex-1">
-                          <p className="font-medium">{assignee.fullName}</p>
-                          <p className="text-sm text-gray-600">{assignee.workEmail}</p>
-                        </div>
-                        <Badge variant="outline" className="capitalize">
-                          {assignee.role.replace('_', ' ')}
-                        </Badge>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}

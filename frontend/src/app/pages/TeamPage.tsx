@@ -14,6 +14,17 @@ import {
   DialogDescription,
 } from '../components/ui/dialog';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '../components/ui/alert-dialog';
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -151,28 +162,24 @@ export function TeamPage() {
   };
 
   const handleSuspendUser = async (user: User) => {
-    if (confirm(`Are you sure you want to suspend ${user.fullName}?`)) {
-      const success = await suspendUser(user.id);
-      if (success) {
-        setDemoUsers((prev) =>
-          prev.map((u) => (u.id === user.id ? { ...u, suspended: true } : u))
-        );
-        toast.success(`${user.fullName} has been suspended`);
-      } else {
-        toast.error('Failed to suspend user');
-      }
+    const success = await suspendUser(user.id);
+    if (success) {
+      setDemoUsers((prev) =>
+        prev.map((u) => (u.id === user.id ? { ...u, suspended: true } : u))
+      );
+      toast.success(`${user.fullName} has been suspended`);
+    } else {
+      toast.error('Failed to suspend user');
     }
   };
 
   const handleDeleteUser = async (user: User) => {
-    if (confirm(`Are you sure you want to delete ${user.fullName}? This action cannot be undone.`)) {
-      const success = await deleteUser(user.id);
-      if (success) {
-        setDemoUsers((prev) => prev.filter((u) => u.id !== user.id));
-        toast.success(`${user.fullName} has been deleted`);
-      } else {
-        toast.error('Failed to delete user');
-      }
+    const success = await deleteUser(user.id);
+    if (success) {
+      setDemoUsers((prev) => prev.filter((u) => u.id !== user.id));
+      toast.success(`${user.fullName} has been deleted`);
+    } else {
+      toast.error('Failed to delete user');
     }
   };
 
@@ -291,24 +298,58 @@ export function TeamPage() {
                             Assign Role
                           </Button>
                           {!user.suspended && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="text-orange-600 border-orange-300 hover:bg-orange-50"
-                              onClick={() => handleSuspendUser(user)}
-                            >
-                              <Ban className="w-4 h-4 mr-2" />
-                              Suspend
-                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-orange-600 border-orange-300 hover:bg-orange-50"
+                                >
+                                  <Ban className="w-4 h-4 mr-2" />
+                                  Suspend
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Suspend User</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to suspend {user.fullName}? They will lose access to the system until unsuspended.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => handleSuspendUser(user)}>
+                                    Suspend
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                           )}
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => handleDeleteUser(user)}
-                          >
-                            <Trash2 className="w-4 h-4 mr-2" />
-                            Delete
-                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                              >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                Delete
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete User</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete {user.fullName}? This action cannot be undone and will permanently remove their account and all associated data.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDeleteUser(user)}>
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       )}
                     </div>

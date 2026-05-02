@@ -82,6 +82,8 @@ export class RestAdapter implements IApiAdapter {
       createdBy: event.created_by || event.createdBy,
       status: event.status,
       outputType: (event.output_type || event.outputType || 'TV').split(' ')[0] as any,
+      priority: event.priority,
+      isPublic: event.is_public || event.isPublic,
     };
   }
 

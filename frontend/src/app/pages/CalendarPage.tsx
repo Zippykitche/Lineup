@@ -74,8 +74,8 @@ export function CalendarPage() {
         days.push(
           <div
             key={currentDay.toString()}
-            className={`min-h-32 border p-2 cursor-pointer ${
-              isCurrentMonth ? 'bg-white' : 'bg-gray-50'
+            className={`min-h-40 border p-2 cursor-pointer ${
+              isCurrentMonth ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-700'
             } ${isToday ? 'ring-2 ring-blue-500' : ''}`}
             onClick={() => {
               setSelectedDay(currentDay);
@@ -88,31 +88,44 @@ export function CalendarPage() {
               {format(currentDay, 'd')}
             </div>
 
-            <div className="space-y-1">
-              {dayEvents.slice(0, 3).map((event) => (
+            <div className="space-y-1 max-h-24 overflow-y-auto">
+              {dayEvents.map((event, index) => (
                 <div
                   key={event.id}
-                  className="text-xs p-1.5 rounded cursor-pointer hover:bg-gray-100 border"
-                  onClick={() => setSelectedEvent(event)}
+                  className={`text-xs p-1 rounded cursor-pointer hover:bg-gray-100 border ${
+                    dayEvents.length > 4 ? 'py-0.5 px-1' : 'p-1.5'
+                  }`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedEvent(event);
+                  }}
+                  style={{
+                    backgroundColor: event.priority === 'urgent' ? '#fee2e2' :
+                                   event.priority === 'high' ? '#fef3c7' :
+                                   event.priority === 'medium' ? '#dbeafe' : '#f3f4f6',
+                    borderColor: event.priority === 'urgent' ? '#fca5a5' :
+                                event.priority === 'high' ? '#fcd34d' :
+                                event.priority === 'medium' ? '#93c5fd' : '#d1d5db'
+                  }}
                 >
-                  <div className="font-medium truncate">{event.title}</div>
-
-                  <div className="text-[10px] text-gray-600">{event.startTime}</div>
-
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    <Badge variant="outline" className="text-[9px]">
-                      {event.outputType}
-                    </Badge>
-                    <Badge className={`text-[9px] ${getEventStatusColor(event.status)}`}>
-                      {event.status}
-                    </Badge>
+                  <div className={`font-medium truncate ${dayEvents.length > 4 ? 'text-[10px]' : 'text-xs'}`}>
+                    {event.title}
                   </div>
+                  <div className={`text-gray-600 ${dayEvents.length > 4 ? 'text-[9px]' : 'text-[10px]'}`}>
+                    {event.startTime}
+                  </div>
+                  {dayEvents.length <= 4 && (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      <Badge variant="outline" className="text-[9px]">
+                        {event.outputType}
+                      </Badge>
+                      <Badge className={`text-[9px] ${getEventStatusColor(event.status)}`}>
+                        {event.status}
+                      </Badge>
+                    </div>
+                  )}
                 </div>
               ))}
-
-              {dayEvents.length > 3 && (
-                <div className="text-xs text-gray-600">+{dayEvents.length - 3} more</div>
-              )}
             </div>
           </div>
         );

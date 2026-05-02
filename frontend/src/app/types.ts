@@ -4,7 +4,7 @@ export type Role = 'super_admin' | 'editor' | 'assignee';
 
 export type TaskStatus = 'Pending' | 'In Progress' | 'Completed';
 
-export type TaskPriority = 'Low' | 'Medium' | 'High';
+export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
 
 export type EventStatus = 'Planned' | 'In Progress' | 'Done';
 
@@ -25,6 +25,8 @@ export interface Event {
   outputType: OutputType;
   type?: EventType;
   category?: string;
+  priority?: TaskPriority;
+  isPublic?: boolean;
 }
 
 export interface User {

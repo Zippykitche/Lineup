@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import {
   Dialog,
@@ -40,6 +40,14 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
   const [outputType, setOutputType] = useState<OutputType>('TV');
   const [category, setCategory] = useState('General');
 
+  // Set today's date as default when dialog opens
+  useEffect(() => {
+    if (open && !date) {
+      const today = new Date().toISOString().split('T')[0];
+      setDate(today);
+    }
+  }, [open, date]);
+
   const canCreateEvent =
     currentUser?.role === 'super_admin' || currentUser?.role === 'editor';
 
@@ -53,6 +61,12 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
 
     if (!title || !date || !startTime || !endTime) {
       toast.error('Please fill in all required fields');
+      return;
+    }
+
+    // Validate end time is after start time
+    if (startTime && endTime && endTime <= startTime) {
+      toast.error('End time must be after start time');
       return;
     }
 
@@ -150,8 +164,16 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
                 id="endTime"
                 type="time"
                 value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
+                onChange={(e) => {
+                  const newEndTime = e.target.value;
+                  if (startTime && newEndTime && newEndTime <= startTime) {
+                    toast.error('End time must be after start time');
+                    return;
+                  }
+                  setEndTime(newEndTime);
+                }}
                 required
+                min={startTime || undefined}
               />
             </div>
           </div>
