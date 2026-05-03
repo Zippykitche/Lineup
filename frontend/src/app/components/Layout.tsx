@@ -13,15 +13,17 @@ import {
   Bell,
   UserCircle,
   LogOut,
+  ChevronRight,
 } from 'lucide-react';
 import logo from '../../assets/KBC-PODCASTS-LOGO-1.png';
+import { format, parseISO, startOfDay } from 'date-fns';
 
 interface LayoutProps {
   children?: ReactNode;
 }
 
 export function Layout({ children }: LayoutProps) {
-  const { currentUser, logout, notifications } = useApp();
+  const { currentUser, logout, notifications, events } = useApp();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -44,6 +46,15 @@ export function Layout({ children }: LayoutProps) {
     { icon: Bell, label: 'Notifications', path: '/notifications', badge: unreadCount },
     { icon: UserCircle, label: 'Profile', path: '/profile' },
   ];
+
+  const upcomingEvents = events
+    .filter(event => {
+      const eventDate = startOfDay(parseISO(event.date));
+      const today = startOfDay(new Date());
+      return eventDate >= today;
+    })
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    .slice(0, 3);
 
   const getInitials = (name: string) =>
     name
@@ -93,7 +104,7 @@ export function Layout({ children }: LayoutProps) {
 
       <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
-          <aside className="lg:w-64 shrink-0">
+          <aside className="lg:w-64 shrink-0 space-y-8">
             <nav className="space-y-1">
               {navItems.map((item) => {
                 const isActive = location.pathname === item.path;
@@ -120,6 +131,43 @@ export function Layout({ children }: LayoutProps) {
                 );
               })}
             </nav>
+
+            {/* Global Sidebar Events Widget */}
+            <div className="hidden lg:block px-4">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Upcoming Events
+                </h3>
+                <button 
+                  onClick={() => navigate('/calendar')}
+                  className="text-xs text-blue-600 hover:underline flex items-center"
+                >
+                  View all
+                </button>
+              </div>
+              <div className="space-y-3">
+                {upcomingEvents.map((event) => (
+                  <div 
+                    key={event.id} 
+                    className="group cursor-pointer"
+                    onClick={() => navigate('/calendar')}
+                  >
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100 group-hover:text-blue-600 transition-colors">
+                      {event.title}
+                    </p>
+                    <div className="flex items-center justify-between mt-0.5">
+                      <p className="text-xs text-gray-500">
+                        {format(parseISO(event.date), 'MMM d')} • {event.startTime}
+                      </p>
+                      <ChevronRight className="w-3 h-3 text-gray-300 group-hover:text-blue-400" />
+                    </div>
+                  </div>
+                ))}
+                {upcomingEvents.length === 0 && (
+                  <p className="text-xs text-gray-500 italic">No events scheduled</p>
+                )}
+              </div>
+            </div>
           </aside>
 
           <main className="flex-1 min-w-0">{children || <Outlet />}</main>

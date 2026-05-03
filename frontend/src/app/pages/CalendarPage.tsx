@@ -348,6 +348,15 @@ export function CalendarPage() {
     setCurrentDate(new Date());
   };
 
+  const upcomingEvents = userEvents
+    .filter(event => {
+      const eventDate = startOfDay(parseISO(event.date));
+      const today = startOfDay(new Date());
+      return eventDate >= today;
+    })
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    .slice(0, 10);
+
   return (
     <div className="flex gap-6">
       {/* Main Calendar */}
@@ -458,31 +467,27 @@ export function CalendarPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3 max-h-96 overflow-y-auto">
-              {userEvents
-                .filter(event => new Date(event.date) >= new Date())
-                .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-                .slice(0, 10)
-                .map((event) => (
-                  <div
-                    key={event.id}
-                    className="border rounded-lg p-3 bg-white hover:bg-gray-50 cursor-pointer"
-                    onClick={() => setSelectedEvent(event)}
-                  >
-                    <div className="font-medium text-sm">{event.title}</div>
-                    <div className="text-xs text-gray-600 mt-1">
-                      {format(parseISO(event.date), 'MMM d, yyyy')} • {event.startTime}
-                    </div>
-                    <div className="flex gap-1 mt-2">
-                      <Badge variant="outline" className="text-[9px]">
-                        {event.outputType}
-                      </Badge>
-                      <Badge className={`text-[9px] ${getEventStatusColor(event.status)}`}>
-                        {event.status}
-                      </Badge>
-                    </div>
+              {upcomingEvents.map((event) => (
+                <div
+                  key={event.id}
+                  className="border rounded-lg p-3 bg-white hover:bg-gray-50 cursor-pointer"
+                  onClick={() => setSelectedEvent(event)}
+                >
+                  <div className="font-medium text-sm">{event.title}</div>
+                  <div className="text-xs text-gray-600 mt-1">
+                    {format(parseISO(event.date), 'MMM d, yyyy')} • {event.startTime}
                   </div>
-                ))}
-              {userEvents.filter(event => new Date(event.date) >= new Date()).length === 0 && (
+                  <div className="flex gap-1 mt-2">
+                    <Badge variant="outline" className="text-[9px]">
+                      {event.outputType}
+                    </Badge>
+                    <Badge className={`text-[9px] ${getEventStatusColor(event.status)}`}>
+                      {event.status}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+              {upcomingEvents.length === 0 && (
                 <div className="text-center text-gray-500 text-sm py-4">
                   No upcoming events
                 </div>
