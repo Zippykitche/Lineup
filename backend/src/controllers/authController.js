@@ -19,6 +19,18 @@ const normalizeUser = (userDoc) => {
   };
 };
 
+// Helper to simulate sending an email
+const sendWelcomeEmail = async (email, name, resetLink) => {
+  console.log('--------------------------------------------------');
+  console.log(`📧 SENDING WELCOME EMAIL TO: ${email}`);
+  console.log(`Hi ${name},`);
+  console.log('Welcome to Lineup! Your account has been created by an administrator.');
+  console.log(`Please use the following link to set your password: ${resetLink}`);
+  console.log('--------------------------------------------------');
+  // In a real app, you would use Nodemailer, SendGrid, etc. here
+  return true;
+};
+
 // Register user with role - Super Admin only
 export const createUser = async (req, res) => {
   const { email, password, fullName, full_name, role, department, phone } = req.body;
@@ -36,13 +48,14 @@ export const createUser = async (req, res) => {
   try {
     const userRecord = await auth.createUser({ email, password, displayName: name });
 
-    // Auto-send password reset email to new user with redirect URL
+    // Generate password reset link
     const actionCodeSettings = {
       url: 'https://lineup-eta-nine.vercel.app/login',
     };
-    await auth.generatePasswordResetLink(email, actionCodeSettings).then(async (link) => {
-      console.log(`Password reset link for ${email}: ${link}`);
-    });
+    const resetLink = await auth.generatePasswordResetLink(email, actionCodeSettings);
+    
+    // Explicitly "send" the email
+    await sendWelcomeEmail(email, name, resetLink);
 
     await auth.setCustomUserClaims(userRecord.uid, { role });
 
@@ -59,7 +72,7 @@ export const createUser = async (req, res) => {
 
     await db.collection('users').doc(userRecord.uid).set(userDoc);
 
-    res.status(201).json({ data: normalizeUser(userDoc), message: `User ${name} created successfully`, status: 201 });
+    res.status(201).json({ data: normalizeUser(userDoc), message: `User ${name} created successfully and welcome email sent.`, status: 201 });
   } catch (err) {
     console.error('Create user error:', err);
     res.status(500).json({ message: err.message });

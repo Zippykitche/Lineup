@@ -30,7 +30,7 @@ export const getTasks = async (filters = {}) => {
     }
 
     if (filters.assigneeId) {
-      query = query.where('assigneeId', '==', filters.assigneeId);
+      query = query.where('assigneeIds', 'array-contains', filters.assigneeId);
     }
 
     if (filters.priority) {

@@ -442,8 +442,19 @@ export function CalendarPage() {
       {/* Sidebar */}
       <div className="w-80 space-y-6">
         <Card>
-          <CardHeader>
-            <CardTitle>Upcoming Events</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-base font-medium">Upcoming Events</CardTitle>
+            {canCreateEvent && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-8 w-8" 
+                onClick={() => setShowCreateEvent(true)}
+                title="Add Event"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            )}
           </CardHeader>
           <CardContent>
             <div className="space-y-3 max-h-96 overflow-y-auto">
