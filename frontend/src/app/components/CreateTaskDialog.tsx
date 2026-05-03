@@ -36,6 +36,7 @@ export function CreateTaskDialog({ open, onOpenChange }: CreateTaskDialogProps) 
   const [priority, setPriority] = useState<TaskPriority>('Medium');
   const [description, setDescription] = useState('');
   const [selectedEventId, setSelectedEventId] = useState<string>('');
+  const INDEPENDENT_TASK_EVENT_ID = 'none';
 
   const canAssignTasks =
     currentUser?.role === 'super_admin' || currentUser?.role === 'editor';
@@ -70,7 +71,10 @@ export function CreateTaskDialog({ open, onOpenChange }: CreateTaskDialogProps) 
         priority,
         description,
         createdBy: currentUser?.id || '',
-        eventId: selectedEventId || null,
+        eventId:
+          selectedEventId === INDEPENDENT_TASK_EVENT_ID
+            ? null
+            : selectedEventId || null,
       });
 
       toast.success('Task created and assigned successfully');
@@ -183,8 +187,8 @@ export function CreateTaskDialog({ open, onOpenChange }: CreateTaskDialogProps) 
               <SelectTrigger id="event">
                 <SelectValue placeholder="Select an event..." />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">No event (Independent task)</SelectItem>
+                <SelectContent>
+                <SelectItem value={INDEPENDENT_TASK_EVENT_ID}>No event (Independent task)</SelectItem>
                 {events.map((event) => (
                   <SelectItem key={event.id} value={event.id}>
                     {event.title} ({event.date})

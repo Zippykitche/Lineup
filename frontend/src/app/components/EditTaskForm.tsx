@@ -29,6 +29,7 @@ export function EditTaskForm({ task, onClose, onSave }: EditTaskFormProps) {
   const [priority, setPriority] = useState<TaskPriority>(task.priority);
   const [description, setDescription] = useState(task.description || '');
   const [selectedEventId, setSelectedEventId] = useState<string>(task.eventId || '');
+  const INDEPENDENT_TASK_EVENT_ID = 'none';
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -43,7 +44,10 @@ export function EditTaskForm({ task, onClose, onSave }: EditTaskFormProps) {
         status,
         priority,
         description,
-        eventId: selectedEventId || null,
+        eventId:
+          selectedEventId === INDEPENDENT_TASK_EVENT_ID
+            ? null
+            : selectedEventId || null,
       });
 
       toast.success('Task updated successfully');
@@ -146,7 +150,7 @@ export function EditTaskForm({ task, onClose, onSave }: EditTaskFormProps) {
             <SelectValue placeholder="Select an event..." />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">No event (Independent task)</SelectItem>
+            <SelectItem value={INDEPENDENT_TASK_EVENT_ID}>No event (Independent task)</SelectItem>
             {events.map((event) => (
               <SelectItem key={event.id} value={event.id}>
                 {event.title} ({event.date})
