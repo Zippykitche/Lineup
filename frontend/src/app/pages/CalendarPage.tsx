@@ -454,29 +454,30 @@ export function CalendarPage() {
 
       {/* Sidebar */}
       <div className="w-80 space-y-6">
+        {/* Sidebar Control Bar */}
+        <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+          <Button
+            size="sm"
+            variant={todayView === 'all' ? 'default' : 'ghost'}
+            onClick={() => setTodayView('all')}
+            className="flex-1 text-xs font-medium"
+          >
+            All Events
+          </Button>
+          <Button
+            size="sm"
+            variant={todayView === 'am' ? 'default' : 'ghost'}
+            onClick={() => setTodayView('am')}
+            className="flex-1 text-xs font-medium"
+          >
+            AM Events
+          </Button>
+        </div>
+
         {/* Today's Events */}
         <Card>
-          <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <CardTitle className="text-lg">Today&apos;s Events</CardTitle>
-              <p className="text-xs text-gray-500 mt-1">Show today&apos;s schedule or only AM events.</p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                size="sm"
-                variant={todayView === 'all' ? 'default' : 'outline'}
-                onClick={() => setTodayView('all')}
-              >
-                All
-              </Button>
-              <Button
-                size="sm"
-                variant={todayView === 'am' ? 'default' : 'outline'}
-                onClick={() => setTodayView('am')}
-              >
-                AM Events
-              </Button>
-            </div>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg">Today&apos;s Events</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3 max-h-64 overflow-y-auto">
