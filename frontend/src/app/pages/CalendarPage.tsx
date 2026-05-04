@@ -16,6 +16,7 @@ import {
   isSameDay,
   isSameMonth,
   parseISO,
+  startOfDay,
 } from 'date-fns';
 import { Badge } from '../components/ui/badge';
 import { Event, EventStatus } from '../types';
@@ -27,6 +28,7 @@ export function CalendarPage() {
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
+  const [todayView, setTodayView] = useState<'all' | 'am'>('all');
 
   const isSuperAdmin = currentUser?.role === 'super_admin';
   const isEditor = currentUser?.role === 'editor';
@@ -53,6 +55,17 @@ export function CalendarPage() {
   const getCreatorName = (userId: string) => {
     return users.find((u) => u.id === userId)?.fullName || 'Unknown';
   };
+
+  const todayEvents = userEvents.filter((event) =>
+    isSameDay(parseISO(event.date), new Date())
+  );
+
+  const amTodayEvents = todayEvents.filter((event) => {
+    const [hour, minute] = event.startTime.split(':').map(Number);
+    return hour < 12 || (hour === 12 && minute === 0);
+  });
+
+  const sidebarTodayEvents = todayView === 'am' ? amTodayEvents : todayEvents;
 
   const renderMonthView = () => {
     const monthStart = startOfMonth(currentDate);
@@ -450,44 +463,100 @@ export function CalendarPage() {
 
       {/* Sidebar */}
       <div className="w-80 space-y-6">
+        {/* Sidebar Control Bar */}
+        <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+          <Button
+            size="sm"
+            variant={todayView === 'all' ? 'default' : 'ghost'}
+            onClick={() => setTodayView('all')}
+            className="flex-1 text-xs font-medium"
+          >
+            All Events
+          </Button>
+          <Button
+            size="sm"
+            variant={todayView === 'am' ? 'default' : 'ghost'}
+            onClick={() => setTodayView('am')}
+            className="flex-1 text-xs font-medium"
+          >
+            AM Events
+          </Button>
+        </div>
+
+        {/* Today's Events */}
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-base font-medium">Upcoming Events</CardTitle>
-            {canCreateEvent && (
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-8 w-8" 
-                onClick={() => setShowCreateEvent(true)}
-                title="Add Event"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            )}
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg">Today&apos;s Events</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3 max-h-96 overflow-y-auto">
-              {upcomingEvents.map((event) => (
-                <div
-                  key={event.id}
-                  className="border rounded-lg p-3 bg-white hover:bg-gray-50 cursor-pointer"
-                  onClick={() => setSelectedEvent(event)}
-                >
-                  <div className="font-medium text-sm">{event.title}</div>
-                  <div className="text-xs text-gray-600 mt-1">
-                    {format(parseISO(event.date), 'MMM d, yyyy')} • {event.startTime}
+            <div className="space-y-3 max-h-64 overflow-y-auto">
+              {sidebarTodayEvents
+                .sort((a, b) => {
+                  const timeA = a.startTime.split(':').map(Number);
+                  const timeB = b.startTime.split(':').map(Number);
+                  return timeA[0] * 60 + timeA[1] - (timeB[0] * 60 + timeB[1]);
+                })
+                .map((event) => (
+                  <div
+                    key={event.id}
+                    className="border rounded-lg p-3 bg-blue-50 hover:bg-blue-100 cursor-pointer transition-colors"
+                    onClick={() => setSelectedEvent(event)}
+                  >
+                    <div className="font-medium text-sm">{event.title}</div>
+                    <div className="text-xs text-gray-600 mt-1">
+                      {event.startTime} - {event.endTime}
+                    </div>
+                    <div className="flex gap-1 mt-2">
+                      <Badge variant="outline" className="text-[9px]">
+                        {event.outputType}
+                      </Badge>
+                      <Badge className={`text-[9px] ${getEventStatusColor(event.status)}`}>
+                        {event.status}
+                      </Badge>
+                    </div>
                   </div>
-                  <div className="flex gap-1 mt-2">
-                    <Badge variant="outline" className="text-[9px]">
-                      {event.outputType}
-                    </Badge>
-                    <Badge className={`text-[9px] ${getEventStatusColor(event.status)}`}>
-                      {event.status}
-                    </Badge>
-                  </div>
+                ))}
+              {sidebarTodayEvents.length === 0 && (
+                <div className="text-center text-gray-500 text-sm py-4">
+                  {todayView === 'am' ? 'No AM events today' : 'No events today'}
                 </div>
-              ))}
-              {upcomingEvents.length === 0 && (
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Upcoming Events */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Upcoming Events</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3 max-h-64 overflow-y-auto">
+              {userEvents
+                .filter(event => startOfDay(parseISO(event.date)) > startOfDay(new Date()))
+                .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                .slice(0, 10)
+                .map((event) => (
+                  <div
+                    key={event.id}
+                    className="border rounded-lg p-3 bg-white hover:bg-gray-50 cursor-pointer transition-colors"
+                    onClick={() => setSelectedEvent(event)}
+                  >
+                    <div className="font-medium text-sm">{event.title}</div>
+                    <div className="text-xs text-gray-600 mt-1">
+                      {format(parseISO(event.date), 'MMM d')} • {event.startTime}
+                    </div>
+                    <div className="flex gap-1 mt-2">
+                      <Badge variant="outline" className="text-[9px]">
+                        {event.outputType}
+                      </Badge>
+                      <Badge className={`text-[9px] ${getEventStatusColor(event.status)}`}>
+                        {event.status}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+              {userEvents.filter(event => startOfDay(parseISO(event.date)) > startOfDay(new Date())).length === 0 && (
                 <div className="text-center text-gray-500 text-sm py-4">
                   No upcoming events
                 </div>

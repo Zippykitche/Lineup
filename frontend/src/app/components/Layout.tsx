@@ -14,6 +14,7 @@ import {
   UserCircle,
   LogOut,
   ChevronRight,
+  List,
 } from 'lucide-react';
 import logo from '../../assets/KBC-PODCASTS-LOGO-1.png';
 import { format, parseISO, startOfDay } from 'date-fns';
@@ -41,6 +42,7 @@ export function Layout({ children }: LayoutProps) {
   const navItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
     { icon: Calendar, label: 'Calendar', path: '/calendar' },
+    { icon: List, label: 'Events', path: '/events' },
     { icon: CheckSquare, label: 'Tasks', path: '/tasks' },
     { icon: Users, label: isSuperAdmin ? 'Users' : 'Team', path: '/team' },
     { icon: Bell, label: 'Notifications', path: '/notifications', badge: unreadCount },

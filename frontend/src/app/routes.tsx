@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router';
 import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { CalendarPage } from './pages/CalendarPage';
+import { EventsPage } from './pages/EventsPage';
 import { TasksPage } from './pages/TasksPage';
 import { TeamPage } from './pages/TeamPage';
 import { NotificationsPage } from './pages/NotificationsPage';
@@ -37,6 +38,10 @@ export const router = createBrowserRouter([
           {
             path: '/calendar',
             element: <CalendarPage />,
+          },
+          {
+            path: '/events',
+            element: <EventsPage />,
           },
           {
             path: '/tasks',
