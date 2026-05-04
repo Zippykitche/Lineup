@@ -28,6 +28,7 @@ export function CalendarPage() {
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
+  const [todayView, setTodayView] = useState<'all' | 'am'>('all');
 
   const isSuperAdmin = currentUser?.role === 'super_admin';
   const isEditor = currentUser?.role === 'editor';
@@ -54,6 +55,17 @@ export function CalendarPage() {
   const getCreatorName = (userId: string) => {
     return users.find((u) => u.id === userId)?.fullName || 'Unknown';
   };
+
+  const todayEvents = userEvents.filter((event) =>
+    isSameDay(parseISO(event.date), new Date())
+  );
+
+  const amTodayEvents = todayEvents.filter((event) => {
+    const [hour, minute] = event.startTime.split(':').map(Number);
+    return hour < 12 || (hour === 12 && minute === 0);
+  });
+
+  const sidebarTodayEvents = todayView === 'am' ? amTodayEvents : todayEvents;
 
   const renderMonthView = () => {
     const monthStart = startOfMonth(currentDate);
@@ -444,13 +456,31 @@ export function CalendarPage() {
       <div className="w-80 space-y-6">
         {/* Today's Events */}
         <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Today&apos;s Events</CardTitle>
+          <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <CardTitle className="text-lg">Today&apos;s Events</CardTitle>
+              <p className="text-xs text-gray-500 mt-1">Show today&apos;s schedule or only AM events.</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                size="sm"
+                variant={todayView === 'all' ? 'default' : 'outline'}
+                onClick={() => setTodayView('all')}
+              >
+                All
+              </Button>
+              <Button
+                size="sm"
+                variant={todayView === 'am' ? 'default' : 'outline'}
+                onClick={() => setTodayView('am')}
+              >
+                AM Events
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-3 max-h-64 overflow-y-auto">
-              {userEvents
-                .filter(event => isSameDay(parseISO(event.date), new Date()))
+              {sidebarTodayEvents
                 .sort((a, b) => {
                   const timeA = a.startTime.split(':').map(Number);
                   const timeB = b.startTime.split(':').map(Number);
@@ -476,9 +506,9 @@ export function CalendarPage() {
                     </div>
                   </div>
                 ))}
-              {userEvents.filter(event => isSameDay(parseISO(event.date), new Date())).length === 0 && (
+              {sidebarTodayEvents.length === 0 && (
                 <div className="text-center text-gray-500 text-sm py-4">
-                  No events today
+                  {todayView === 'am' ? 'No AM events today' : 'No events today'}
                 </div>
               )}
             </div>
