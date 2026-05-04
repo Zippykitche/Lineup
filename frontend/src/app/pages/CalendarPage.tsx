@@ -16,6 +16,7 @@ import {
   isSameDay,
   isSameMonth,
   parseISO,
+  startOfDay,
 } from 'date-fns';
 import { Badge } from '../components/ui/badge';
 import { Event, EventStatus } from '../types';
@@ -448,7 +449,7 @@ export function CalendarPage() {
           <CardContent>
             <div className="space-y-3 max-h-96 overflow-y-auto">
               {userEvents
-                .filter(event => new Date(event.date) >= new Date())
+                .filter(event => startOfDay(parseISO(event.date)) >= startOfDay(new Date()))
                 .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
                 .slice(0, 10)
                 .map((event) => (
@@ -471,7 +472,7 @@ export function CalendarPage() {
                     </div>
                   </div>
                 ))}
-              {userEvents.filter(event => new Date(event.date) >= new Date()).length === 0 && (
+              {userEvents.filter(event => startOfDay(parseISO(event.date)) >= startOfDay(new Date())).length === 0 && (
                 <div className="text-center text-gray-500 text-sm py-4">
                   No upcoming events
                 </div>
