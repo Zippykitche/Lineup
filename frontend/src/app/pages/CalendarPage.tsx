@@ -442,25 +442,29 @@ export function CalendarPage() {
 
       {/* Sidebar */}
       <div className="w-80 space-y-6">
+        {/* Today's Events */}
         <Card>
           <CardHeader>
-            <CardTitle>Upcoming Events</CardTitle>
+            <CardTitle className="text-lg">Today&apos;s Events</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3 max-h-96 overflow-y-auto">
+            <div className="space-y-3 max-h-64 overflow-y-auto">
               {userEvents
-                .filter(event => startOfDay(parseISO(event.date)) >= startOfDay(new Date()))
-                .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-                .slice(0, 10)
+                .filter(event => isSameDay(parseISO(event.date), new Date()))
+                .sort((a, b) => {
+                  const timeA = a.startTime.split(':').map(Number);
+                  const timeB = b.startTime.split(':').map(Number);
+                  return timeA[0] * 60 + timeA[1] - (timeB[0] * 60 + timeB[1]);
+                })
                 .map((event) => (
                   <div
                     key={event.id}
-                    className="border rounded-lg p-3 bg-white hover:bg-gray-50 cursor-pointer"
+                    className="border rounded-lg p-3 bg-blue-50 hover:bg-blue-100 cursor-pointer transition-colors"
                     onClick={() => setSelectedEvent(event)}
                   >
                     <div className="font-medium text-sm">{event.title}</div>
                     <div className="text-xs text-gray-600 mt-1">
-                      {format(parseISO(event.date), 'MMM d, yyyy')} • {event.startTime}
+                      {event.startTime} - {event.endTime}
                     </div>
                     <div className="flex gap-1 mt-2">
                       <Badge variant="outline" className="text-[9px]">
@@ -472,7 +476,47 @@ export function CalendarPage() {
                     </div>
                   </div>
                 ))}
-              {userEvents.filter(event => startOfDay(parseISO(event.date)) >= startOfDay(new Date())).length === 0 && (
+              {userEvents.filter(event => isSameDay(parseISO(event.date), new Date())).length === 0 && (
+                <div className="text-center text-gray-500 text-sm py-4">
+                  No events today
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Upcoming Events */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Upcoming Events</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3 max-h-64 overflow-y-auto">
+              {userEvents
+                .filter(event => startOfDay(parseISO(event.date)) > startOfDay(new Date()))
+                .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                .slice(0, 10)
+                .map((event) => (
+                  <div
+                    key={event.id}
+                    className="border rounded-lg p-3 bg-white hover:bg-gray-50 cursor-pointer transition-colors"
+                    onClick={() => setSelectedEvent(event)}
+                  >
+                    <div className="font-medium text-sm">{event.title}</div>
+                    <div className="text-xs text-gray-600 mt-1">
+                      {format(parseISO(event.date), 'MMM d')} • {event.startTime}
+                    </div>
+                    <div className="flex gap-1 mt-2">
+                      <Badge variant="outline" className="text-[9px]">
+                        {event.outputType}
+                      </Badge>
+                      <Badge className={`text-[9px] ${getEventStatusColor(event.status)}`}>
+                        {event.status}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+              {userEvents.filter(event => startOfDay(parseISO(event.date)) > startOfDay(new Date())).length === 0 && (
                 <div className="text-center text-gray-500 text-sm py-4">
                   No upcoming events
                 </div>
