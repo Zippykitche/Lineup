@@ -15,6 +15,10 @@ export const verifyToken = async (req, res, next) => {
 
     try {
       const decodedToken = await adminAuth.verifyIdToken(token);
+      const firebaseUser = await adminAuth.getUser(decodedToken.uid);
+      if (firebaseUser.disabled) {
+        return res.status(403).json({ error: 'Account suspended' });
+      }
       req.user = decodedToken;
       next();
     } catch (verifyIdError) {

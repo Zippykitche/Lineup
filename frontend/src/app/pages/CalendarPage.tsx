@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -32,7 +32,7 @@ export function CalendarPage() {
   const [view, setView] = useState<'month' | 'week' | 'day'>('month');
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const [selectedDay, setSelectedDay] = useState<Date | null>(null);
+  const [selectedDay, setSelectedDay] = useState<Date | null>(new Date());
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [manualDateInput, setManualDateInput] = useState('');
 
@@ -254,13 +254,14 @@ export function CalendarPage() {
   };
 
   const renderDayView = () => {
-    const dayEvents = selectedDay ? getEventsForDate(selectedDay) : [];
+    const currentDay = selectedDay ?? currentDate;
+    const dayEvents = getEventsForDate(currentDay);
 
     return (
       <div className="space-y-4">
         <div className="text-center">
           <h3 className="text-lg font-semibold">
-            {selectedDay ? format(selectedDay, 'EEEE, MMMM d, yyyy') : 'Select a day'}
+            {format(currentDay, 'EEEE, MMMM d, yyyy')}
           </h3>
         </div>
 
@@ -331,7 +332,11 @@ export function CalendarPage() {
   };
 
   const handleToday = () => {
-    setCurrentDate(new Date());
+    const today = new Date();
+    setCurrentDate(today);
+    if (view === 'day') {
+      setSelectedDay(today);
+    }
   };
 
   const handleJumpToDate = (date: Date | undefined) => {
@@ -360,37 +365,38 @@ export function CalendarPage() {
       if (parsedDate && isValid(parsedDate)) {
         handleJumpToDate(parsedDate);
         setManualDateInput('');
-      } else {
-        // Try to parse as just month and year
-        const monthYearMatch = manualDateInput.match(/^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d{4})$/i);
-        if (monthYearMatch) {
-          const monthName = monthYearMatch[1].toLowerCase();
-          const year = parseInt(monthYearMatch[2]);
-          const monthIndex = [
-            'jan', 'feb', 'mar', 'apr', 'may', 'jun',
-            'jul', 'aug', 'sep', 'oct', 'nov', 'dec'
-          ].indexOf(monthName.substring(0, 3));
+        return;
+      }
 
-          if (monthIndex !== -1) {
-            const targetDate = new Date(year, monthIndex, 1);
-            handleJumpToDate(targetDate);
-            setManualDateInput('');
-            return;
-          }
-        }
+      // Try to parse as month and year (e.g., "January 2024" or "Jan 2024")
+      const monthYearMatch = manualDateInput.match(/^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|january|february|march|april|june|july|august|september|october|november|december)\s+(\d{4})$/i);
+      if (monthYearMatch) {
+        const monthName = monthYearMatch[1].toLowerCase();
+        const year = parseInt(monthYearMatch[2]);
+        const monthIndex = [
+          'january', 'february', 'march', 'april', 'may', 'june',
+          'july', 'august', 'september', 'october', 'november', 'december'
+        ].findIndex(m => m.startsWith(monthName.substring(0, 3)));
 
-        // Try to parse as just year
-        const yearMatch = manualDateInput.match(/^(\d{4})$/);
-        if (yearMatch) {
-          const year = parseInt(yearMatch[1]);
-          const targetDate = new Date(year, 0, 1); // January 1st of the year
+        if (monthIndex !== -1) {
+          const targetDate = new Date(year, monthIndex, 1);
           handleJumpToDate(targetDate);
           setManualDateInput('');
           return;
         }
-
-        alert('Invalid date format. Please use formats like: YYYY-MM-DD, MM/DD/YYYY, or "January 2024"');
       }
+
+      // Try to parse as year only (e.g., "2024")
+      const yearMatch = manualDateInput.match(/^(\d{4})$/);
+      if (yearMatch) {
+        const year = parseInt(yearMatch[1]);
+        const targetDate = new Date(year, 0, 1);
+        handleJumpToDate(targetDate);
+        setManualDateInput('');
+        return;
+      }
+
+      alert('Invalid date format. Please use: MM/DD/YYYY, YYYY-MM-DD, or Month YYYY');
     }
   };
 
@@ -439,7 +445,7 @@ export function CalendarPage() {
                 <PopoverContent className="w-auto p-0" align="start">
                   <Calendar
                     mode="single"
-                    selected={currentDate}
+                    selected={view === 'day' ? (selectedDay ?? currentDate) : currentDate}
                     onSelect={handleJumpToDate}
                     initialFocus
                   />
@@ -449,7 +455,7 @@ export function CalendarPage() {
               <div className="flex items-center gap-2">
                 <Input
                   type="text"
-                  placeholder="MM/DD/YYYY or Jan 2024"
+                  placeholder="MM/DD/YYYY"
                   value={manualDateInput}
                   onChange={(e) => setManualDateInput(e.target.value)}
                   onKeyPress={handleManualDateKeyPress}

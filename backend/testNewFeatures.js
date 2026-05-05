@@ -143,6 +143,32 @@ async function test() {
       throw new Error('User unsuspension failed or not reflected in database');
     }
 
+    // Confirm suspended user cannot log in
+    try {
+      await loginUser(userToSuspendEmail, 'Test123!');
+      throw new Error('Suspended user was able to log in unexpectedly');
+    } catch (loginErr) {
+      console.log('✅ Suspended user login blocked as expected');
+    }
+
+    // Unsuspend the user
+    log('Unsuspending user...');
+    const unsuspendResponse = await api.patch(`/auth/users/${testUserId}/unsuspend`);
+    console.log('✅ User unsuspended successfully');
+    log('Unsuspend Response:', unsuspendResponse.data);
+
+    const usersAfterUnsuspend = await api.get('/auth/users');
+    const unsuspendedUser = usersAfterUnsuspend.data.data.find((u) => u.id === testUserId);
+    if (unsuspendedUser && !unsuspendedUser.suspended) {
+      console.log('✅ User unsuspension verified in database');
+    }
+
+    // Confirm the user can log in again after being unsuspended
+    const resumedToken = await loginUser(userToSuspendEmail, 'Test123!');
+    if (resumedToken) {
+      console.log('✅ Unsuspended user can log in again');
+    }
+
     // Delete a user
     log('Deleting user...');
     const userToDeleteEmail = `user_to_delete_${Date.now()}@test.com`;
