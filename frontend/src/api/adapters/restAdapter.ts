@@ -112,6 +112,16 @@ export class RestAdapter implements IApiAdapter {
     };
   }
 
+  async unsuspendUser(uid: string): Promise<ApiResponse<User>> {
+    const response = await this.request<any>(`/auth/users/${uid}/unsuspend`, {
+      method: 'PATCH',
+    });
+    return {
+      ...response,
+      data: this.mapUser(response.data?.data || response.data)
+    };
+  }
+
   async deleteUser(uid: string): Promise<ApiResponse<void>> {
     return this.request<void>(`/auth/users/${uid}`, { method: 'DELETE' });
   }

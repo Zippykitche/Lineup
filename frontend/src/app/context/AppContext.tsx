@@ -21,6 +21,7 @@ interface AppContextType {
   register: (user: Partial<User> & { password?: string }) => Promise<boolean>;
   forgotPassword: (email: string) => Promise<boolean>;
   suspendUser: (uid: string) => Promise<boolean>;
+  unsuspendUser: (uid: string) => Promise<boolean>;
   deleteUser: (uid: string) => Promise<boolean>;
   updateUserRole: (uid: string, role: string) => Promise<boolean>;
   addEvent: (event: Omit<Event, "id">) => Promise<void>;
@@ -199,6 +200,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const unsuspendUser = async (uid: string): Promise<boolean> => {
+    try {
+      setIsLoading(true);
+      await api.unsuspendUser(uid);
+      await refreshData();
+      return true;
+    } catch (error) {
+      console.error("Unsuspend user failed:", error);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const deleteUser = async (uid: string): Promise<boolean> => {
     try {
       setIsLoading(true);
@@ -288,6 +303,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         register,
         forgotPassword,
         suspendUser,
+        unsuspendUser,
         deleteUser,
         updateUserRole,
         addEvent,

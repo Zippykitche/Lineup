@@ -14,6 +14,7 @@ export interface IApiAdapter {
   getUsers(params?: QueryParams): Promise<PaginatedResponse<User>>;
   getUserById(id: string): Promise<ApiResponse<User>>;
   suspendUser(uid: string): Promise<ApiResponse<User>>;
+  unsuspendUser(uid: string): Promise<ApiResponse<User>>;
   deleteUser(uid: string): Promise<ApiResponse<void>>;
   updateUserRole(uid: string, role: string): Promise<ApiResponse<User>>;
 

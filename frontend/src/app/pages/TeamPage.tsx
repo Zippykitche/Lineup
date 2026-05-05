@@ -52,7 +52,7 @@ const DEPARTMENT_OPTIONS = [
 ];
 
 export function TeamPage() {
-  const { users, tasks, events, currentUser, register, suspendUser, deleteUser, updateUserRole } = useApp();
+  const { users, tasks, events, currentUser, register, suspendUser, unsuspendUser, deleteUser, updateUserRole } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
   const [showCreateUser, setShowCreateUser] = useState(false);
   const [showRoleDialog, setShowRoleDialog] = useState(false);
@@ -170,6 +170,18 @@ export function TeamPage() {
       toast.success(`${user.fullName} has been suspended`);
     } else {
       toast.error('Failed to suspend user');
+    }
+  };
+
+  const handleUnsuspendUser = async (user: User) => {
+    const success = await unsuspendUser(user.id);
+    if (success) {
+      setDemoUsers((prev) =>
+        prev.map((u) => (u.id === user.id ? { ...u, suspended: false } : u))
+      );
+      toast.success(`${user.fullName} has been unsuspended`);
+    } else {
+      toast.error('Failed to unsuspend user');
     }
   };
 
@@ -320,6 +332,34 @@ export function TeamPage() {
                                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                                   <AlertDialogAction onClick={() => handleSuspendUser(user)}>
                                     Suspend
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          )}
+                          {user.suspended && (
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-green-600 border-green-300 hover:bg-green-50"
+                                >
+                                  <Shield className="w-4 h-4 mr-2" />
+                                  Unsuspend
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Unsuspend User</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to unsuspend {user.fullName}? They will regain access to the system.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => handleUnsuspendUser(user)}>
+                                    Unsuspend
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
                               </AlertDialogContent>

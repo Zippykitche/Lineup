@@ -8,6 +8,7 @@ import {
   updateUserRole,
   deleteUser,
   suspendUser,
+  unsuspendUser,
   forgotPassword,
   logout,
 } from '../controllers/authController.js'; // Ensure .js extension for ESM
@@ -107,6 +108,7 @@ router.post('/create-user', verifyToken, requireRole(['super_admin']), createUse
 router.get('/users', verifyToken, requireRole(['super_admin', 'editor', 'assignee']), getAllUsers); 
 router.patch('/users/:uid/role', verifyToken, requireRole(['super_admin']), updateUserRole); 
 router.patch('/users/:uid/suspend', verifyToken, requireRole(['super_admin']), suspendUser); 
+router.patch('/users/:uid/unsuspend', verifyToken, requireRole(['super_admin']), unsuspendUser); 
 router.delete('/users/:uid', verifyToken, requireRole(['super_admin']), deleteUser); 
 
 export default router; // Use export default for ESM

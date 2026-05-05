@@ -49,44 +49,30 @@ export const createUser = async (req, res) => {
   try {
     const userRecord = await auth.createUser({ email, password, displayName: name });
 
-<<<<<<< HEAD
-    // Send actual password reset email via Firebase Client SDK
-    try {
-      await sendPasswordResetEmail(clientAuth, email);
-      console.log(`✅ PASSWORD RESET EMAIL SENT TO: ${email}`);
-    } catch (emailErr) {
-      console.error(`❌ FAILED TO SEND EMAIL TO ${email}:`, emailErr.message);
-      // We don't fail the whole user creation if just the email fails, 
-      // but we log it so the admin knows.
-    }
-=======
-    // Auto-send password reset email to new user with redirect URL
+    // Auto-send password reset email to new user with redirect URL via Firebase REST API
     const apiKey = process.env.FIREBASE_WEB_API_KEY || process.env.FIREBASE_API_KEY;
     const resetUrl = process.env.FRONTEND_URL || 'https://lineup-eta-nine.vercel.app/login';
 
-    if (!apiKey) {
-      throw new Error('FIREBASE_API_KEY is required to send password reset emails');
+    if (apiKey) {
+      try {
+        const resetPayload = {
+          requestType: 'PASSWORD_RESET',
+          email,
+          continueUrl: resetUrl,
+          canHandleCodeInApp: false,
+        };
+
+        await axios.post(
+          `https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${apiKey}`,
+          resetPayload
+        );
+        console.log(`✅ PASSWORD RESET EMAIL SENT TO: ${email}`);
+      } catch (emailErr) {
+        console.error(`❌ FAILED TO SEND EMAIL TO ${email}:`, emailErr.message);
+        // We don't fail the whole user creation if just the email fails,
+        // but we log it so the admin knows.
+      }
     }
-
-    const actionCodeSettings = {
-      continueUrl: resetUrl,
-      canHandleCodeInApp: false,
-    };
-
-    // The Admin SDK generatePasswordResetLink creates the link only; the REST API sendOobCode sends the actual email.
-    const resetPayload = {
-      requestType: 'PASSWORD_RESET',
-      email,
-      continueUrl: actionCodeSettings.continueUrl,
-      canHandleCodeInApp: actionCodeSettings.canHandleCodeInApp,
-    };
-
-    const sendResetResponse = await axios.post(
-      `https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${apiKey}`,
-      resetPayload
-    );
-    console.log(`Password reset email sent to ${email}:`, sendResetResponse.data);
->>>>>>> origin
 
     await auth.setCustomUserClaims(userRecord.uid, { role });
 
@@ -174,6 +160,21 @@ export const suspendUser = async (req, res) => {
     res.json({ data: { uid, suspended: true }, message: 'User suspended successfully', status: 200 });
   } catch (err) {
     console.error('Suspend user error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Unsuspend user - Super Admin only
+export const unsuspendUser = async (req, res) => {
+  const { uid } = req.params;
+
+  try {
+    // Re-enable in Firebase Auth and update Firestore
+    await auth.updateUser(uid, { disabled: false });
+    await db.collection('users').doc(uid).update({ suspended: false, updatedAt: new Date().toISOString() });
+    res.json({ data: { uid, suspended: false }, message: 'User unsuspended successfully', status: 200 });
+  } catch (err) {
+    console.error('Unsuspend user error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };
