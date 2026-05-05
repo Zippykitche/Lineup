@@ -2,7 +2,10 @@ import { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
-import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { Input } from '../components/ui/input';
+import { Calendar } from '../components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
+import { ChevronLeft, ChevronRight, Plus, CalendarIcon } from 'lucide-react';
 import { CreateEventDialog } from '../components/CreateEventDialog';
 import { EventDetailsDialog } from '../components/EventDetailsDialog';
 import {
@@ -16,9 +19,12 @@ import {
   isSameDay,
   isSameMonth,
   parseISO,
+  parse,
+  isValid,
 } from 'date-fns';
 import { Badge } from '../components/ui/badge';
 import { Event, EventStatus } from '../types';
+import { cn } from '../components/ui/utils';
 
 export function CalendarPage() {
   const { currentUser, events, users } = useApp();
@@ -27,6 +33,8 @@ export function CalendarPage() {
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const [manualDateInput, setManualDateInput] = useState('');
 
   const isSuperAdmin = currentUser?.role === 'super_admin';
   const isEditor = currentUser?.role === 'editor';
@@ -326,6 +334,72 @@ export function CalendarPage() {
     setCurrentDate(new Date());
   };
 
+  const handleJumpToDate = (date: Date | undefined) => {
+    if (date) {
+      setCurrentDate(date);
+      if (view === 'day') {
+        setSelectedDay(date);
+      }
+      setDatePickerOpen(false);
+    }
+  };
+
+  const handleManualDateJump = () => {
+    if (manualDateInput.trim()) {
+      // Try different date formats
+      const formats = ['yyyy-MM-dd', 'MM/dd/yyyy', 'dd/MM/yyyy', 'MMM dd, yyyy', 'MMMM dd, yyyy'];
+      let parsedDate: Date | null = null;
+
+      for (const fmt of formats) {
+        parsedDate = parse(manualDateInput, fmt, new Date());
+        if (isValid(parsedDate)) {
+          break;
+        }
+      }
+
+      if (parsedDate && isValid(parsedDate)) {
+        handleJumpToDate(parsedDate);
+        setManualDateInput('');
+      } else {
+        // Try to parse as just month and year
+        const monthYearMatch = manualDateInput.match(/^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d{4})$/i);
+        if (monthYearMatch) {
+          const monthName = monthYearMatch[1].toLowerCase();
+          const year = parseInt(monthYearMatch[2]);
+          const monthIndex = [
+            'jan', 'feb', 'mar', 'apr', 'may', 'jun',
+            'jul', 'aug', 'sep', 'oct', 'nov', 'dec'
+          ].indexOf(monthName.substring(0, 3));
+
+          if (monthIndex !== -1) {
+            const targetDate = new Date(year, monthIndex, 1);
+            handleJumpToDate(targetDate);
+            setManualDateInput('');
+            return;
+          }
+        }
+
+        // Try to parse as just year
+        const yearMatch = manualDateInput.match(/^(\d{4})$/);
+        if (yearMatch) {
+          const year = parseInt(yearMatch[1]);
+          const targetDate = new Date(year, 0, 1); // January 1st of the year
+          handleJumpToDate(targetDate);
+          setManualDateInput('');
+          return;
+        }
+
+        alert('Invalid date format. Please use formats like: YYYY-MM-DD, MM/DD/YYYY, or "January 2024"');
+      }
+    }
+  };
+
+  const handleManualDateKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleManualDateJump();
+    }
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -354,6 +428,37 @@ export function CalendarPage() {
               <Button variant="outline" size="sm" onClick={handleNext}>
                 <ChevronRight className="w-4 h-4" />
               </Button>
+
+              <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <CalendarIcon className="w-4 h-4 mr-2" />
+                    Jump to Date
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={currentDate}
+                    onSelect={handleJumpToDate}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+
+              <div className="flex items-center gap-2">
+                <Input
+                  type="text"
+                  placeholder="MM/DD/YYYY or Jan 2024"
+                  value={manualDateInput}
+                  onChange={(e) => setManualDateInput(e.target.value)}
+                  onKeyPress={handleManualDateKeyPress}
+                  className="w-40 h-8 text-sm"
+                />
+                <Button variant="outline" size="sm" onClick={handleManualDateJump}>
+                  Go
+                </Button>
+              </div>
 
               <h3 className="text-lg font-semibold ml-2">
                 {view === 'month'
