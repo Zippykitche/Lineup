@@ -141,7 +141,7 @@ export function Layout({ children }: LayoutProps) {
                   Upcoming Events
                 </h3>
                 <button 
-                  onClick={() => navigate('/calendar')}
+                  onClick={() => navigate('/events')}
                   className="text-xs text-blue-600 hover:underline flex items-center"
                 >
                   View all
@@ -152,7 +152,7 @@ export function Layout({ children }: LayoutProps) {
                   <div 
                     key={event.id} 
                     className="group cursor-pointer"
-                    onClick={() => navigate('/calendar')}
+                    onClick={() => navigate('/events')}
                   >
                     <p className="text-sm font-medium text-gray-900 dark:text-gray-100 group-hover:text-blue-600 transition-colors">
                       {event.title}

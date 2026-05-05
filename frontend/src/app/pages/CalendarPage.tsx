@@ -24,11 +24,10 @@ import { Event, EventStatus } from '../types';
 export function CalendarPage() {
   const { currentUser, events, users } = useApp();
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [view, setView] = useState<'month' | 'week' | 'day' | 'list'>('month');
+  const [view, setView] = useState<'month' | 'week' | 'day'>('month');
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
-  const [todayView, setTodayView] = useState<'all' | 'am'>('all');
 
   const isSuperAdmin = currentUser?.role === 'super_admin';
   const isEditor = currentUser?.role === 'editor';
@@ -55,17 +54,6 @@ export function CalendarPage() {
   const getCreatorName = (userId: string) => {
     return users.find((u) => u.id === userId)?.fullName || 'Unknown';
   };
-
-  const todayEvents = userEvents.filter((event) =>
-    isSameDay(parseISO(event.date), new Date())
-  );
-
-  const amTodayEvents = todayEvents.filter((event) => {
-    const [hour, minute] = event.startTime.split(':').map(Number);
-    return hour < 12 || (hour === 12 && minute === 0);
-  });
-
-  const sidebarTodayEvents = todayView === 'am' ? amTodayEvents : todayEvents;
 
   const renderMonthView = () => {
     const monthStart = startOfMonth(currentDate);
@@ -280,61 +268,6 @@ export function CalendarPage() {
     );
   };
 
-  const renderListView = () => {
-    const sortedEvents = [...userEvents].sort(
-      (a, b) =>
-        new Date(`${a.date}T${a.startTime}`).getTime() -
-        new Date(`${b.date}T${b.startTime}`).getTime()
-    );
-
-    return (
-      <div className="space-y-3">
-        {sortedEvents.length === 0 ? (
-          <div className="border rounded-lg p-8 text-center text-gray-600">
-            No scheduled events found.
-          </div>
-        ) : (
-          sortedEvents.map((event) => (
-            <div
-              key={event.id}
-              className="border rounded-lg p-4 bg-white hover:bg-gray-50 cursor-pointer"
-              onClick={() => setSelectedEvent(event)}
-            >
-              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                <div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h4 className="font-semibold">{event.title}</h4>
-
-                    <Badge variant="outline" className="text-[10px]">
-                      {event.outputType}
-                    </Badge>
-
-                    <Badge className={getEventStatusColor(event.status)}>
-                      {event.status}
-                    </Badge>
-                  </div>
-
-                  <p className="text-sm text-gray-600 mt-1">
-                    {format(parseISO(event.date), 'EEEE, MMMM d, yyyy')} • {event.startTime} -{' '}
-                    {event.endTime}
-                  </p>
-
-                  {event.description && (
-                    <p className="text-sm text-gray-500 mt-2">{event.description}</p>
-                  )}
-                </div>
-
-                <div className="text-xs text-gray-500">
-                  Created by {getCreatorName(event.createdBy)}
-                </div>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-    );
-  };
-
   const handlePrevious = () => {
     if (view === 'month') {
       setCurrentDate(addMonths(currentDate, -1));
@@ -361,210 +294,78 @@ export function CalendarPage() {
     setCurrentDate(new Date());
   };
 
-  const upcomingEvents = userEvents
-    .filter(event => {
-      const eventDate = startOfDay(parseISO(event.date));
-      const today = startOfDay(new Date());
-      return eventDate >= today;
-    })
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-    .slice(0, 10);
-
   return (
-    <div className="flex gap-6">
-      {/* Main Calendar */}
-      <div className="flex-1 space-y-6">
-        <Card>
-          <CardHeader>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <CardTitle>{isAssignee ? 'My Calendar' : 'Editorial Calendar'}</CardTitle>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <CardTitle>{isAssignee ? 'My Calendar' : 'Editorial Calendar'}</CardTitle>
 
-              {canCreateEvent && (
-                <Button onClick={() => setShowCreateEvent(true)}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create Event
-                </Button>
-              )}
-            </div>
-          </CardHeader>
+            {canCreateEvent && (
+              <Button onClick={() => setShowCreateEvent(true)}>
+                <Plus className="w-4 h-4 mr-2" />
+                Create Event
+              </Button>
+            )}
+          </div>
+        </CardHeader>
 
-          <CardContent className="space-y-4">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-              <div className="flex items-center gap-2 flex-wrap">
-                {(view === 'month' || view === 'week' || view === 'day') && (
-                  <>
-                    <Button variant="outline" size="sm" onClick={handlePrevious}>
-                      <ChevronLeft className="w-4 h-4" />
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={handleToday}>
-                      Today
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={handleNext}>
-                      <ChevronRight className="w-4 h-4" />
-                    </Button>
-                  </>
-                )}
+        <CardContent className="space-y-4">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button variant="outline" size="sm" onClick={handlePrevious}>
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleToday}>
+                Today
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleNext}>
+                <ChevronRight className="w-4 h-4" />
+              </Button>
 
-                <h3 className="text-lg font-semibold ml-2">
-                  {view === 'month'
-                    ? format(currentDate, 'MMMM yyyy')
-                    : view === 'week'
-                    ? `${format(startOfWeek(currentDate), 'MMM d')} - ${format(endOfWeek(currentDate), 'MMM d, yyyy')}`
-                    : view === 'day'
-                    ? (selectedDay ? format(selectedDay, 'EEEE, MMMM d, yyyy') : format(currentDate, 'EEEE, MMMM d, yyyy'))
-                    : 'All Scheduled Events'}
-                </h3>
-              </div>
-
-              <div className="flex gap-2">
-                <Button
-                  variant={view === 'month' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setView('month')}
-                >
-                  Month
-                </Button>
-                <Button
-                  variant={view === 'week' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setView('week')}
-                >
-                  Week
-                </Button>
-                <Button
-                  variant={view === 'day' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setView('day')}
-                >
-                  Day
-                </Button>
-                <Button
-                  variant={view === 'list' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setView('list')}
-                >
-                  List
-                </Button>
-              </div>
+              <h3 className="text-lg font-semibold ml-2">
+                {view === 'month'
+                  ? format(currentDate, 'MMMM yyyy')
+                  : view === 'week'
+                  ? `${format(startOfWeek(currentDate), 'MMM d')} - ${format(endOfWeek(currentDate), 'MMM d, yyyy')}`
+                  : (selectedDay ? format(selectedDay, 'EEEE, MMMM d, yyyy') : format(currentDate, 'EEEE, MMMM d, yyyy'))}
+              </h3>
             </div>
 
-            <div>
-              {view === 'month'
-                ? renderMonthView()
-                : view === 'week'
-                ? renderWeekView()
-                : view === 'day'
-                ? renderDayView()
-                : renderListView()}
+            <div className="flex gap-2">
+              <Button
+                variant={view === 'month' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setView('month')}
+              >
+                Month
+              </Button>
+              <Button
+                variant={view === 'week' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setView('week')}
+              >
+                Week
+              </Button>
+              <Button
+                variant={view === 'day' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setView('day')}
+              >
+                Day
+              </Button>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
 
-      {/* Sidebar */}
-      <div className="w-80 space-y-6">
-        {/* Sidebar Control Bar */}
-        <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
-          <Button
-            size="sm"
-            variant={todayView === 'all' ? 'default' : 'ghost'}
-            onClick={() => setTodayView('all')}
-            className="flex-1 text-xs font-medium"
-          >
-            All Events
-          </Button>
-          <Button
-            size="sm"
-            variant={todayView === 'am' ? 'default' : 'ghost'}
-            onClick={() => setTodayView('am')}
-            className="flex-1 text-xs font-medium"
-          >
-            AM Events
-          </Button>
-        </div>
-
-        {/* Today's Events */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Today&apos;s Events</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3 max-h-64 overflow-y-auto">
-              {sidebarTodayEvents
-                .sort((a, b) => {
-                  const timeA = a.startTime.split(':').map(Number);
-                  const timeB = b.startTime.split(':').map(Number);
-                  return timeA[0] * 60 + timeA[1] - (timeB[0] * 60 + timeB[1]);
-                })
-                .map((event) => (
-                  <div
-                    key={event.id}
-                    className="border rounded-lg p-3 bg-blue-50 hover:bg-blue-100 cursor-pointer transition-colors"
-                    onClick={() => setSelectedEvent(event)}
-                  >
-                    <div className="font-medium text-sm">{event.title}</div>
-                    <div className="text-xs text-gray-600 mt-1">
-                      {event.startTime} - {event.endTime}
-                    </div>
-                    <div className="flex gap-1 mt-2">
-                      <Badge variant="outline" className="text-[9px]">
-                        {event.outputType}
-                      </Badge>
-                      <Badge className={`text-[9px] ${getEventStatusColor(event.status)}`}>
-                        {event.status}
-                      </Badge>
-                    </div>
-                  </div>
-                ))}
-              {sidebarTodayEvents.length === 0 && (
-                <div className="text-center text-gray-500 text-sm py-4">
-                  {todayView === 'am' ? 'No AM events today' : 'No events today'}
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Upcoming Events */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Upcoming Events</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3 max-h-64 overflow-y-auto">
-              {userEvents
-                .filter(event => startOfDay(parseISO(event.date)) > startOfDay(new Date()))
-                .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-                .slice(0, 10)
-                .map((event) => (
-                  <div
-                    key={event.id}
-                    className="border rounded-lg p-3 bg-white hover:bg-gray-50 cursor-pointer transition-colors"
-                    onClick={() => setSelectedEvent(event)}
-                  >
-                    <div className="font-medium text-sm">{event.title}</div>
-                    <div className="text-xs text-gray-600 mt-1">
-                      {format(parseISO(event.date), 'MMM d')} • {event.startTime}
-                    </div>
-                    <div className="flex gap-1 mt-2">
-                      <Badge variant="outline" className="text-[9px]">
-                        {event.outputType}
-                      </Badge>
-                      <Badge className={`text-[9px] ${getEventStatusColor(event.status)}`}>
-                        {event.status}
-                      </Badge>
-                    </div>
-                  </div>
-                ))}
-              {userEvents.filter(event => startOfDay(parseISO(event.date)) > startOfDay(new Date())).length === 0 && (
-                <div className="text-center text-gray-500 text-sm py-4">
-                  No upcoming events
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          <div>
+            {view === 'month'
+              ? renderMonthView()
+              : view === 'week'
+              ? renderWeekView()
+              : renderDayView()}
+          </div>
+        </CardContent>
+      </Card>
 
       {canCreateEvent && (
         <CreateEventDialog open={showCreateEvent} onOpenChange={setShowCreateEvent} />
