@@ -39,6 +39,8 @@ export const createTaskHandler = async (req, res) => {
         userId: assigneeId,
         message: `New task assigned: ${title} (Due: ${dueDate})`,
         type: 'task',
+        targetId: result.id,
+        targetType: 'task'
       });
     }
 

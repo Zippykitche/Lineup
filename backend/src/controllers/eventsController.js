@@ -118,6 +118,8 @@ export const createEvent = async (req, res) => {
       await sendNotificationToUsers(attendees, {
         message: `New event created: ${title} on ${date}`,
         type: 'meeting',
+        targetId: eventRef.id,
+        targetType: 'event'
       });
     }
 
@@ -183,16 +185,6 @@ export const updateEvent = async (req, res) => {
       }
     }
 
-    // Validate no past dates if date is being updated
-    if (req.body.date) {
-      const eventDate = new Date(req.body.date);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      if (eventDate < today) {
-        return res.status(400).json({ message: 'Cannot update events to past dates' });
-      }
-    }
-
     const updatePayload = {
       ...req.body,
       outputType: normalizeOutputType(req.body.outputType || req.body.output_type),
@@ -208,7 +200,14 @@ export const updateEvent = async (req, res) => {
     );
 
     await db.collection('events').doc(id).update(updatePayload);
-    res.json({ data: normalizeEvent(updatePayload, id), message: 'Event updated successfully', status: 200 });
+    
+    // Fetch the full updated event for the response
+    const updatedDoc = await db.collection('events').doc(id).get();
+    res.json({ 
+      data: normalizeEvent(updatedDoc.data(), id), 
+      message: 'Event updated successfully', 
+      status: 200 
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });

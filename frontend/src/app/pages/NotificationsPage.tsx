@@ -1,12 +1,16 @@
+import { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Bell, Calendar, CheckSquare, Clock } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
+import { NotificationDetailsDialog } from '../components/NotificationDetailsDialog';
+import { Notification } from '../types';
 
 export function NotificationsPage() {
   const { currentUser, notifications, markNotificationAsRead } = useApp();
+  const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
 
   const userNotifications = notifications
     .filter((n) => n.userId === currentUser?.id)
@@ -15,7 +19,8 @@ export function NotificationsPage() {
   const unreadNotifications = userNotifications.filter((n) => !n.read);
   const readNotifications = userNotifications.filter((n) => n.read);
 
-  const handleMarkAsRead = (id: string) => {
+  const handleMarkAsRead = (id: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     markNotificationAsRead(id);
   };
 
@@ -36,18 +41,19 @@ export function NotificationsPage() {
     }
   };
 
-  const renderNotification = (notification: any, isUnread: boolean) => (
+  const renderNotification = (notification: Notification, isUnread: boolean) => (
     <div
       key={notification.id}
-      className={`p-4 border rounded-lg hover:bg-gray-50 transition-colors ${
-        isUnread ? 'bg-blue-50 border-blue-200' : 'bg-white'
+      className={`p-4 border rounded-lg hover:bg-gray-50 transition-colors cursor-pointer ${
+        isUnread ? 'bg-blue-50 border-blue-200 shadow-sm' : 'bg-white'
       }`}
+      onClick={() => setSelectedNotification(notification)}
     >
       <div className="flex items-start gap-4">
         <div className="mt-1">{getNotificationIcon(notification.type)}</div>
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
-            <p className={`text-sm ${isUnread ? 'font-medium' : 'text-gray-700'}`}>
+            <p className={`text-sm line-clamp-2 ${isUnread ? 'font-medium' : 'text-gray-700'}`}>
               {notification.message}
             </p>
             {isUnread && <Badge className="bg-blue-600 shrink-0">New</Badge>}
@@ -61,7 +67,7 @@ export function NotificationsPage() {
                 variant="ghost"
                 size="sm"
                 className="h-6 text-xs"
-                onClick={() => handleMarkAsRead(notification.id)}
+                onClick={(e) => handleMarkAsRead(notification.id, e)}
               >
                 Mark as read
               </Button>
@@ -79,7 +85,7 @@ export function NotificationsPage() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <CardTitle className="flex items-center gap-2">
-                <Bell className="w-6 h-6" />
+                <Bell className="w-6 h-6 text-blue-600" />
                 Notifications
               </CardTitle>
               <p className="text-sm text-gray-600 mt-1">
@@ -98,7 +104,10 @@ export function NotificationsPage() {
           {/* Unread Notifications */}
           {unreadNotifications.length > 0 && (
             <div>
-              <h3 className="font-semibold mb-3">Unread</h3>
+              <h3 className="font-semibold mb-3 flex items-center gap-2 text-blue-900">
+                <span className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></span>
+                Unread
+              </h3>
               <div className="space-y-2">
                 {unreadNotifications.map((notification) =>
                   renderNotification(notification, true)
@@ -110,8 +119,8 @@ export function NotificationsPage() {
           {/* Read Notifications */}
           {readNotifications.length > 0 && (
             <div>
-              <h3 className="font-semibold mb-3">
-                {unreadNotifications.length > 0 ? 'Read' : 'All Notifications'}
+              <h3 className="font-semibold mb-3 text-gray-700">
+                {unreadNotifications.length > 0 ? 'Previously Read' : 'All Notifications'}
               </h3>
               <div className="space-y-2">
                 {readNotifications.map((notification) => renderNotification(notification, false))}
@@ -131,6 +140,14 @@ export function NotificationsPage() {
           )}
         </CardContent>
       </Card>
+
+      {selectedNotification && (
+        <NotificationDetailsDialog
+          notification={selectedNotification}
+          open={!!selectedNotification}
+          onOpenChange={(open) => !open && setSelectedNotification(null)}
+        />
+      )}
     </div>
   );
 }

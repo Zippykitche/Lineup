@@ -48,14 +48,15 @@ export const createUser = async (req, res) => {
   try {
     const userRecord = await auth.createUser({ email, password, displayName: name });
 
-    // Generate password reset link
-    const actionCodeSettings = {
-      url: 'https://lineup-eta-nine.vercel.app/login',
-    };
-    const resetLink = await auth.generatePasswordResetLink(email, actionCodeSettings);
-    
-    // Explicitly "send" the email
-    await sendWelcomeEmail(email, name, resetLink);
+    // Send actual password reset email via Firebase Client SDK
+    try {
+      await sendPasswordResetEmail(clientAuth, email);
+      console.log(`✅ PASSWORD RESET EMAIL SENT TO: ${email}`);
+    } catch (emailErr) {
+      console.error(`❌ FAILED TO SEND EMAIL TO ${email}:`, emailErr.message);
+      // We don't fail the whole user creation if just the email fails, 
+      // but we log it so the admin knows.
+    }
 
     await auth.setCustomUserClaims(userRecord.uid, { role });
 

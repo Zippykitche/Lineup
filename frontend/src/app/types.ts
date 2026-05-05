@@ -60,4 +60,6 @@ export interface Notification {
   createdAt: string; // ISO date string
   read: boolean;
   type: 'meeting' | 'task' | 'reminder';
+  targetId?: string;
+  targetType?: 'event' | 'task';
 }

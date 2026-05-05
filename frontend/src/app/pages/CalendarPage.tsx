@@ -56,6 +56,8 @@ export function CalendarPage() {
         return { bg: '#fee2e2', border: '#fca5a5', text: '#991b1b' }; // Red
       case 'Business':
         return { bg: '#f3e8ff', border: '#d8b4fe', text: '#6b21a8' }; // Purple
+      case 'General':
+        return { bg: '#e0f2fe', border: '#7dd3fc', text: '#0369a1' }; // Sky Blue
       default:
         return { bg: '#f3f4f6', border: '#d1d5db', text: '#374151' }; // Gray
     }
@@ -124,9 +126,6 @@ export function CalendarPage() {
                   >
                     <div className={`font-medium truncate ${dayEvents.length > 4 ? 'text-[10px]' : 'text-xs'}`}>
                       {event.title}
-                    </div>
-                    <div className={`${dayEvents.length > 4 ? 'text-[9px]' : 'text-[10px]'} opacity-80`}>
-                      {event.startTime}
                     </div>
                   </div>
                 );
@@ -198,7 +197,6 @@ export function CalendarPage() {
                   }}
                 >
                   <div className="font-medium truncate">{event.title}</div>
-                  <div className="text-[10px] opacity-80">{event.startTime} - {event.endTime}</div>
                   <div className="flex flex-wrap gap-1 mt-1">
                     <Badge variant="outline" className="text-[9px] border-current opacity-70">
                       {event.outputType}
@@ -261,10 +259,6 @@ export function CalendarPage() {
                         {event.category}
                       </Badge>
                     </div>
-
-                    <p className="text-sm text-gray-600 mt-1">
-                      {event.startTime} - {event.endTime}
-                    </p>
 
                     {event.description && (
                       <p className="text-sm text-gray-500 mt-2">{event.description}</p>

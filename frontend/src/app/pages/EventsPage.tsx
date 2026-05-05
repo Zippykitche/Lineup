@@ -63,6 +63,8 @@ export function EventsPage() {
         return 'bg-red-100 text-red-800 border-red-200';
       case 'Business':
         return 'bg-purple-100 text-purple-800 border-purple-200';
+      case 'General':
+        return 'bg-sky-100 text-sky-800 border-sky-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }

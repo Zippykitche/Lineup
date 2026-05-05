@@ -201,17 +201,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const addEvent = async (event: Omit<Event, "id">) => {
-    await api.createEvent(event);
+    const response = await api.createEvent(event);
+    if (response.data) {
+      setEvents(prev => [...prev, response.data]);
+    }
     await refreshData();
   };
 
   const updateEvent = async (id: string, eventUpdate: Partial<Event>) => {
-    await api.updateEvent(id, eventUpdate);
+    const response = await api.updateEvent(id, eventUpdate);
+    if (response.data) {
+      setEvents(prev => prev.map(e => e.id === id ? { ...e, ...response.data } : e));
+    }
     await refreshData();
   };
 
   const deleteEvent = async (id: string) => {
     await api.deleteEvent(id);
+    setEvents(prev => prev.filter(e => e.id !== id));
     await refreshData();
   };
 
