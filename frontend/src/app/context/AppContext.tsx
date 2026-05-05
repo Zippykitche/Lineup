@@ -53,19 +53,46 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const results = await Promise.allSettled([
         api.getUsers(),
         api.getEvents(),
+        api.getPublicEvents(),
         currentUser.role === 'assignee' ? api.getMyTasks() : api.getTasks(),
         api.getNotifications()
       ]);
 
       if (results[0].status === 'fulfilled') setUsers(results[0].value.data);
-      if (results[1].status === 'fulfilled') setEvents(results[1].value.data);
-      if (results[2].status === 'fulfilled') setTasks(results[2].value.data);
-      if (results[3].status === 'fulfilled') setNotifications(results[3].value.data);
+
+      const eventsFromApi: Event[] = [];
+      if (results[1].status === 'fulfilled') {
+        eventsFromApi.push(...results[1].value.data);
+      }
+      if (results[2].status === 'fulfilled') {
+        eventsFromApi.push(...results[2].value.data);
+      }
+
+      if (eventsFromApi.length > 0) {
+        const uniqueEvents = Array.from(
+          eventsFromApi.reduce((acc, event) => {
+            if (event?.id) {
+              acc.set(event.id, event);
+            }
+            return acc;
+          }, new Map<string, Event>()).values()
+        );
+
+        uniqueEvents.sort((a, b) =>
+          new Date(`${a.date}T${a.startTime}`).getTime() -
+          new Date(`${b.date}T${b.startTime}`).getTime()
+        );
+
+        setEvents(uniqueEvents);
+      }
+
+      if (results[3].status === 'fulfilled') setTasks(results[3].value.data);
+      if (results[4].status === 'fulfilled') setNotifications(results[4].value.data);
       
       // Log failures for debugging
       results.forEach((result, index) => {
         if (result.status === 'rejected') {
-          const endpoints = ['users', 'events', 'tasks', 'notifications'];
+          const endpoints = ['users', 'events', 'public events', 'tasks', 'notifications'];
           console.warn(`Failed to fetch ${endpoints[index]}:`, result.reason);
         }
       });

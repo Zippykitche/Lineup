@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { adminAuth as auth, db } from '../config/firebase.js';
 import { auth as clientAuth } from '../config/firebaseClient.js';
 import { sendPasswordResetEmail } from 'firebase/auth';
@@ -37,12 +38,31 @@ export const createUser = async (req, res) => {
     const userRecord = await auth.createUser({ email, password, displayName: name });
 
     // Auto-send password reset email to new user with redirect URL
+    const apiKey = process.env.FIREBASE_WEB_API_KEY || process.env.FIREBASE_API_KEY;
+    const resetUrl = process.env.FRONTEND_URL || 'https://lineup-eta-nine.vercel.app/login';
+
+    if (!apiKey) {
+      throw new Error('FIREBASE_API_KEY is required to send password reset emails');
+    }
+
     const actionCodeSettings = {
-      url: 'https://lineup-eta-nine.vercel.app/login',
+      continueUrl: resetUrl,
+      canHandleCodeInApp: false,
     };
-    await auth.generatePasswordResetLink(email, actionCodeSettings).then(async (link) => {
-      console.log(`Password reset link for ${email}: ${link}`);
-    });
+
+    // The Admin SDK generatePasswordResetLink creates the link only; the REST API sendOobCode sends the actual email.
+    const resetPayload = {
+      requestType: 'PASSWORD_RESET',
+      email,
+      continueUrl: actionCodeSettings.continueUrl,
+      canHandleCodeInApp: actionCodeSettings.canHandleCodeInApp,
+    };
+
+    const sendResetResponse = await axios.post(
+      `https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${apiKey}`,
+      resetPayload
+    );
+    console.log(`Password reset email sent to ${email}:`, sendResetResponse.data);
 
     await auth.setCustomUserClaims(userRecord.uid, { role });
 
