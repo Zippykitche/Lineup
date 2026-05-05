@@ -120,10 +120,27 @@ async function test() {
     log('Suspend Response:', suspendResponse.data);
 
     // Verify user is suspended
-    const usersResponse = await api.get('/auth/users');
-    const suspendedUser = usersResponse.data.data.find((u) => u.id === testUserId);
+    let usersResponse = await api.get('/auth/users');
+    let suspendedUser = usersResponse.data.data.find((u) => u.id === testUserId);
     if (suspendedUser && suspendedUser.suspended) {
       console.log('✅ User suspension verified in database');
+    } else {
+      throw new Error('User suspension failed or not reflected in database');
+    }
+
+    // Unsuspend the user
+    log('Unsuspending user...');
+    const unsuspendResponse = await api.patch(`/auth/users/${testUserId}/unsuspend`);
+    console.log('✅ User unsuspended successfully');
+    log('Unsuspend Response:', unsuspendResponse.data);
+
+    // Verify user is unsuspended
+    usersResponse = await api.get('/auth/users');
+    suspendedUser = usersResponse.data.data.find((u) => u.id === testUserId);
+    if (suspendedUser && !suspendedUser.suspended) {
+      console.log('✅ User unsuspension verified in database');
+    } else {
+      throw new Error('User unsuspension failed or not reflected in database');
     }
 
     // Delete a user
@@ -169,6 +186,7 @@ async function test() {
       await auth.deleteUser(adminUid);
       await auth.deleteUser(testAssigneeId1);
       await auth.deleteUser(testAssigneeId2);
+      if (testUserId) await auth.deleteUser(testUserId).catch(() => {});
       console.log('✅ Test users cleaned up');
     } catch (error) {
       console.warn('Warning during cleanup:', error.message);

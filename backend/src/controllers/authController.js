@@ -142,7 +142,9 @@ export const updateUserRole = async (req, res) => {
   try {
     await auth.setCustomUserClaims(uid, { role });
     await db.collection('users').doc(uid).update({ role, updatedAt: new Date().toISOString() });
-    res.json({ data: { uid, role }, message: 'Role updated successfully', status: 200 });
+    
+    const userDoc = await db.collection('users').doc(uid).get();
+    res.json({ data: normalizeUser(userDoc.data()), message: 'Role updated successfully', status: 200 });
   } catch (err) {
     console.error('Update role error:', err);
     res.status(500).json({ message: 'Server error' });
@@ -157,7 +159,9 @@ export const suspendUser = async (req, res) => {
     // Disable in Firebase Auth and update Firestore
     await auth.updateUser(uid, { disabled: true });
     await db.collection('users').doc(uid).update({ suspended: true, updatedAt: new Date().toISOString() });
-    res.json({ data: { uid, suspended: true }, message: 'User suspended successfully', status: 200 });
+    
+    const userDoc = await db.collection('users').doc(uid).get();
+    res.json({ data: normalizeUser(userDoc.data()), message: 'User suspended successfully', status: 200 });
   } catch (err) {
     console.error('Suspend user error:', err);
     res.status(500).json({ message: 'Server error' });
@@ -172,7 +176,9 @@ export const unsuspendUser = async (req, res) => {
     // Re-enable in Firebase Auth and update Firestore
     await auth.updateUser(uid, { disabled: false });
     await db.collection('users').doc(uid).update({ suspended: false, updatedAt: new Date().toISOString() });
-    res.json({ data: { uid, suspended: false }, message: 'User unsuspended successfully', status: 200 });
+    
+    const userDoc = await db.collection('users').doc(uid).get();
+    res.json({ data: normalizeUser(userDoc.data()), message: 'User unsuspended successfully', status: 200 });
   } catch (err) {
     console.error('Unsuspend user error:', err);
     res.status(500).json({ message: 'Server error' });
