@@ -58,6 +58,8 @@ export function CalendarPage() {
         return 'bg-purple-100 text-purple-800 border-purple-200';
       case 'General':
         return 'bg-sky-100 text-sky-800 border-sky-200';
+      case 'Public Holiday':
+        return 'bg-orange-100 text-orange-800 border-orange-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
@@ -77,6 +79,8 @@ export function CalendarPage() {
         return { bg: '#f3e8ff', border: '#e9d5ff', text: '#6b21a8' };
       case 'General':
         return { bg: '#e0f2fe', border: '#bae6fd', text: '#075985' };
+      case 'Public Holiday':
+        return { bg: '#ffedd5', border: '#fed7aa', text: '#9a3412' };
       default:
         return { bg: '#f3f4f6', border: '#e5e7eb', text: '#1f2937' };
     }

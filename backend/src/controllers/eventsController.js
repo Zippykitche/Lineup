@@ -1,5 +1,6 @@
 import { db } from '../config/firebase.js';
 import { sendNotificationToUsers } from '../services/notificationService.js';
+import { getHolidays } from '../services/eventService.js';
 
 const normalizeEvent = (eventData = {}, id = null) => {
   return {
@@ -130,14 +131,34 @@ export const createEvent = async (req, res) => {
   }
 };
 
-// Get public events (e.g., holidays)
+/**
+ * Get public events (e.g., holidays).
+ * Merges events from Firestore marked as isPublic with holidays from the Nager.Date API.
+ */
 export const getPublicEvents = async (req, res) => {
   try {
+    // 1. Fetch public events from Firestore
     const snapshot = await db.collection('events')
       .where('isPublic', '==', true)
       .get();
-    const events = snapshot.docs.map(doc => normalizeEvent(doc.data(), doc.id));
-    res.json({ data: events, status: 200 });
+    const firestoreEvents = snapshot.docs.map(doc => normalizeEvent(doc.data(), doc.id));
+    
+    // 2. Fetch holidays from Nager.Date API (Defaults to current year)
+    const year = new Date().getFullYear();
+    const holidays = await getHolidays(year);
+    
+    // 3. Merge results
+    // We avoid duplicates by checking for title-date collisions
+    const firestoreEventKeys = new Set(firestoreEvents.map(e => `${e.title}-${e.date}`));
+    
+    const mergedEvents = [...firestoreEvents];
+    holidays.forEach(h => {
+      if (!firestoreEventKeys.has(`${h.title}-${h.date}`)) {
+        mergedEvents.push(h);
+      }
+    });
+
+    res.json({ data: mergedEvents, status: 200 });
   } catch (err) {
     console.error('Get public events error:', err);
     res.status(500).json({ message: 'Server error' });

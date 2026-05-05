@@ -1,4 +1,64 @@
 import { db } from "../config/firebase.js";
+import axios from "axios";
+
+let holidayCache = {
+  year: null,
+  data: [],
+};
+
+/**
+ * Fetch public holidays from Nager.Date API and normalize them to the application's Event format.
+ * Includes a simple in-memory cache to avoid repeated external API calls.
+ */
+export const getHolidays = async (year = new Date().getFullYear()) => {
+  // Return cached data if available for the requested year
+  if (holidayCache.year === year && holidayCache.data.length > 0) {
+    return holidayCache.data;
+  }
+
+  try {
+    const countryCode = "KE"; // Default to Kenya as per project context
+    console.log(`🔍 Fetching holidays for ${countryCode} in ${year}...`);
+    
+    const response = await axios.get(
+      `https://date.nager.at/api/v3/PublicHolidays/${year}/${countryCode}`
+    );
+
+    const holidays = response.data.map((item) => {
+      const holidayDate = new Date(item.date);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      return {
+        id: `holiday-${item.date}-${item.name.replace(/\s+/g, "-").toLowerCase()}`,
+        title: item.name,
+        date: item.date,
+        startTime: "00:00",
+        endTime: "23:59",
+        description:
+          item.localName !== item.name
+            ? `${item.localName} (${item.name})`
+            : item.name,
+        category: "Public Holiday",
+        priority: "low",
+        isPublic: true,
+        type: "holiday",
+        status: holidayDate < today ? "Done" : "Planned",
+        createdBy: "system",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+    });
+
+    // Update cache
+    holidayCache = { year, data: holidays };
+    return holidays;
+  } catch (error) {
+    console.error("❌ FETCH HOLIDAYS ERROR:", error.message);
+    // Fallback to empty array if API fails
+    return [];
+  }
+};
 
 // CREATE EVENT
 export const createEvent = async (eventData, userId) => {
