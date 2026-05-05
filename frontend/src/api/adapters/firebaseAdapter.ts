@@ -117,6 +117,7 @@ export class FirebaseAdapter implements IApiAdapter {
         role: (data.data.role as Role) || 'assignee',
         department: data.data.department || '',
         phone: data.data.phone || '',
+        suspended: !!(data.data.suspended),
       };
     } catch (error) {
       console.error('Error getting current user:', error);
@@ -141,6 +142,7 @@ export class FirebaseAdapter implements IApiAdapter {
         role: 'assignee' as const,
         department: '',
         phone: '',
+        suspended: false, // Will be updated by refreshData
       },
       token: newToken,
       refreshToken: '',

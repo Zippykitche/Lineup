@@ -66,6 +66,7 @@ export class RestAdapter implements IApiAdapter {
       department: user.department || 'General',
       phone: user.phone || '',
       photoUrl: user.photo_url || user.photoUrl,
+      suspended: !!(user.suspended),
     };
   }
 

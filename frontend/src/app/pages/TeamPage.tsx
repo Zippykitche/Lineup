@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
@@ -58,6 +58,10 @@ export function TeamPage() {
   const [showRoleDialog, setShowRoleDialog] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [demoUsers, setDemoUsers] = useState<User[]>(users);
+
+  useEffect(() => {
+    setDemoUsers(users);
+  }, [users]);
 
   const [fullName, setFullName] = useState('');
   const [workEmail, setWorkEmail] = useState('');
