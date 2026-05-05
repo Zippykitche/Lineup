@@ -65,6 +65,10 @@ router.post('/login', async (req, res) => {
     // Fallback for testing: if REST API fails, generate a custom token for the user
     try {
       const userRecord = await auth.getUserByEmail(email);
+      if (userRecord.disabled) {
+        console.warn(`[AUTH] Login blocked: user ${email} is suspended`);
+        return res.status(403).json({ message: 'Account is suspended' });
+      }
       console.log(`[AUTH] User found in Auth: ${userRecord.uid}. Generating custom token...`);
       const customToken = await auth.createCustomToken(userRecord.uid);
       
