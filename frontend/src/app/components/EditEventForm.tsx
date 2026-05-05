@@ -5,6 +5,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Event } from '../types';
 import { toast } from 'sonner';
+import { LoadingSpinner } from './ui/loading-spinner';
 import {
   Select,
   SelectContent,
@@ -21,6 +22,7 @@ interface Props {
 
 export function EditEventForm({ event, onClose, onSave }: Props) {
   const { updateEvent } = useApp();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [title, setTitle] = useState(event.title);
   const [date, setDate] = useState(event.date);
@@ -29,7 +31,7 @@ export function EditEventForm({ event, onClose, onSave }: Props) {
   const [description, setDescription] = useState(event.description);
   const [category, setCategory] = useState(event.category || 'General');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!title || !date || !startTime || !endTime) {
@@ -43,28 +45,45 @@ export function EditEventForm({ event, onClose, onSave }: Props) {
       return;
     }
 
-    updateEvent(event.id, {
-      title,
-      date,
-      startTime,
-      endTime,
-      description,
-      category,
-    });
-
-    onSave();
+    setIsSubmitting(true);
+    try {
+      await updateEvent(event.id, {
+        title,
+        date,
+        startTime,
+        endTime,
+        description,
+        category,
+      });
+      toast.success('Event updated successfully');
+      onSave();
+    } catch (error: any) {
+      console.error('Failed to update event:', error);
+      toast.error(error.message || 'Failed to update event. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <Label>Title</Label>
-        <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+        <Input 
+          value={title} 
+          onChange={(e) => setTitle(e.target.value)} 
+          disabled={isSubmitting}
+        />
       </div>
 
       <div>
         <Label>Date</Label>
-        <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+        <Input 
+          type="date" 
+          value={date} 
+          onChange={(e) => setDate(e.target.value)} 
+          disabled={isSubmitting}
+        />
       </div>
 
       <div className="flex gap-2">
@@ -74,6 +93,7 @@ export function EditEventForm({ event, onClose, onSave }: Props) {
             type="time"
             value={startTime}
             onChange={(e) => setStartTime(e.target.value)}
+            disabled={isSubmitting}
           />
         </div>
 
@@ -91,6 +111,7 @@ export function EditEventForm({ event, onClose, onSave }: Props) {
               setEndTime(newEndTime);
             }}
             min={startTime || undefined}
+            disabled={isSubmitting}
           />
         </div>
       </div>
@@ -100,12 +121,17 @@ export function EditEventForm({ event, onClose, onSave }: Props) {
         <Input
           value={description}
           onChange={(e) => setDescription(e.target.value)}
+          disabled={isSubmitting}
         />
       </div>
 
       <div>
         <Label>Category</Label>
-        <Select value={category} onValueChange={setCategory}>
+        <Select 
+          value={category} 
+          onValueChange={setCategory}
+          disabled={isSubmitting}
+        >
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
@@ -121,10 +147,24 @@ export function EditEventForm({ event, onClose, onSave }: Props) {
       </div>
 
       <div className="flex justify-end gap-2">
-        <Button type="button" variant="outline" onClick={onClose}>
+        <Button 
+          type="button" 
+          variant="outline" 
+          onClick={onClose}
+          disabled={isSubmitting}
+        >
           Cancel
         </Button>
-        <Button type="submit">Save Changes</Button>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? (
+            <>
+              <LoadingSpinner className="mr-2" />
+              Saving...
+            </>
+          ) : (
+            'Save Changes'
+          )}
+        </Button>
       </div>
     </form>
   );

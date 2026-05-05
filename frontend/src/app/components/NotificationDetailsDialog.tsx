@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import {
   Dialog,
@@ -27,6 +28,12 @@ export function NotificationDetailsDialog({
   const navigate = useNavigate();
   const { markNotificationAsRead } = useApp();
 
+  useEffect(() => {
+    if (open && !notification.read) {
+      markNotificationAsRead(notification.id);
+    }
+  }, [open, notification.id, notification.read, markNotificationAsRead]);
+
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'meeting':
@@ -41,14 +48,10 @@ export function NotificationDetailsDialog({
   };
 
   const handleAction = () => {
-    if (!notification.read) {
-      markNotificationAsRead(notification.id);
-    }
-    
     onOpenChange(false);
 
     if (notification.targetType === 'event') {
-      navigate('/calendar'); // Ideally we'd open the specific event, but this is a good start
+      navigate('/calendar'); 
     } else if (notification.targetType === 'task') {
       navigate('/tasks');
     }
@@ -74,17 +77,6 @@ export function NotificationDetailsDialog({
             <p className="text-gray-800 leading-relaxed">
               {notification.message}
             </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="capitalize">
-              Type: {notification.type}
-            </Badge>
-            {notification.read ? (
-              <Badge variant="secondary">Read</Badge>
-            ) : (
-              <Badge className="bg-blue-600">Unread</Badge>
-            )}
           </div>
         </div>
 

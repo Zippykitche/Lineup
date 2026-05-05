@@ -14,6 +14,7 @@ import { Textarea } from './ui/textarea';
 import { Checkbox } from './ui/checkbox';
 import { toast } from 'sonner';
 import { EventStatus, OutputType } from '../types';
+import { LoadingSpinner } from './ui/loading-spinner';
 import {
   Select,
   SelectContent,
@@ -29,6 +30,7 @@ interface CreateEventDialogProps {
 
 export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps) {
   const { currentUser, users, addEvent } = useApp();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [title, setTitle] = useState('');
   const [date, setDate] = useState('');
@@ -70,6 +72,7 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
       return;
     }
 
+    setIsSubmitting(true);
     try {
       await addEvent({
         title,
@@ -91,6 +94,8 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
     } catch (error: any) {
       console.error('Failed to create event:', error);
       toast.error(error.message || 'Failed to create event. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -133,6 +138,7 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
+              disabled={isSubmitting}
             />
           </div>
 
@@ -145,6 +151,7 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 required
+                disabled={isSubmitting}
               />
             </div>
 
@@ -156,6 +163,7 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
                 required
+                disabled={isSubmitting}
               />
             </div>
 
@@ -175,6 +183,7 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
                 }}
                 required
                 min={startTime || undefined}
+                disabled={isSubmitting}
               />
             </div>
           </div>
@@ -187,6 +196,7 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
+              disabled={isSubmitting}
             />
           </div>
 
@@ -199,6 +209,7 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
                     id={`attendee-${user.id}`}
                     checked={selectedAttendees.includes(user.id)}
                     onCheckedChange={() => toggleAttendee(user.id)}
+                    disabled={isSubmitting}
                   />
                   <label
                     htmlFor={`attendee-${user.id}`}
@@ -216,7 +227,11 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
 
           <div className="space-y-2">
             <Label htmlFor="status">Status</Label>
-            <Select value={status} onValueChange={(v) => setStatus(v as EventStatus)}>
+            <Select 
+              value={status} 
+              onValueChange={(v) => setStatus(v as EventStatus)}
+              disabled={isSubmitting}
+            >
               <SelectTrigger id="status">
                 <SelectValue />
               </SelectTrigger>
@@ -229,7 +244,11 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
           </div>
           <div className="space-y-2">
             <Label htmlFor="outputType">Output Type</Label>
-            <Select value={outputType} onValueChange={(v) => setOutputType(v as OutputType)}>
+            <Select 
+              value={outputType} 
+              onValueChange={(v) => setOutputType(v as OutputType)}
+              disabled={isSubmitting}
+            >
               <SelectTrigger id="outputType">
                 <SelectValue />
               </SelectTrigger>
@@ -244,7 +263,11 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
 
           <div className="space-y-2">
             <Label htmlFor="category">Category</Label>
-            <Select value={category} onValueChange={setCategory}>
+            <Select 
+              value={category} 
+              onValueChange={setCategory}
+              disabled={isSubmitting}
+            >
               <SelectTrigger id="category">
                 <SelectValue />
               </SelectTrigger>
@@ -260,10 +283,24 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
           </div>
 
           <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => onOpenChange(false)}
+              disabled={isSubmitting}
+            >
               Cancel
             </Button>
-            <Button type="submit">Create Event</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <LoadingSpinner className="mr-2" />
+                  Creating...
+                </>
+              ) : (
+                'Create Event'
+              )}
+            </Button>
           </div>
         </form>
       </DialogContent>
