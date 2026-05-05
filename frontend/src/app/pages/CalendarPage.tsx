@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -32,7 +32,7 @@ export function CalendarPage() {
   const [view, setView] = useState<'month' | 'week' | 'day'>('month');
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const [selectedDay, setSelectedDay] = useState<Date | null>(null);
+  const [selectedDay, setSelectedDay] = useState<Date | null>(new Date());
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [manualDateInput, setManualDateInput] = useState('');
 
@@ -254,13 +254,14 @@ export function CalendarPage() {
   };
 
   const renderDayView = () => {
-    const dayEvents = selectedDay ? getEventsForDate(selectedDay) : [];
+    const currentDay = selectedDay ?? currentDate;
+    const dayEvents = getEventsForDate(currentDay);
 
     return (
       <div className="space-y-4">
         <div className="text-center">
           <h3 className="text-lg font-semibold">
-            {selectedDay ? format(selectedDay, 'EEEE, MMMM d, yyyy') : 'Select a day'}
+            {format(currentDay, 'EEEE, MMMM d, yyyy')}
           </h3>
         </div>
 
@@ -331,7 +332,11 @@ export function CalendarPage() {
   };
 
   const handleToday = () => {
-    setCurrentDate(new Date());
+    const today = new Date();
+    setCurrentDate(today);
+    if (view === 'day') {
+      setSelectedDay(today);
+    }
   };
 
   const handleJumpToDate = (date: Date | undefined) => {
