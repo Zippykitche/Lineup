@@ -23,9 +23,6 @@ export function DashboardPage() {
   const canCreateTask = isSuperAdmin || isEditor;
 
   const todaysMeetings = events.filter((event) => {
-    if (isAssignee && !event.attendeeIds.includes(currentUser?.id || '')) {
-      return false;
-    }
     return isToday(parseISO(event.date));
   });
 

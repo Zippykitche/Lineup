@@ -58,6 +58,23 @@ export function EventDetailsDialog({
     }
   };
 
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case 'News':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'Sports':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'Entertainment':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'Politics':
+        return 'bg-red-100 text-red-800 border-red-200';
+      case 'Business':
+        return 'bg-purple-100 text-purple-800 border-purple-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
   const handleDelete = () => {
     if (!isSuperAdmin && !isEditor) {
       toast.error('Only Super Admin or Editor can delete events');
@@ -102,6 +119,9 @@ export function EventDetailsDialog({
               <div className="flex items-center gap-3 flex-wrap">
                 <Badge variant="outline">{event.outputType}</Badge>
                 <Badge className={getEventStatusColor(status)}>{status}</Badge>
+                <Badge className={getCategoryColor(event.category || 'General')}>
+                  {event.category || 'General'}
+                </Badge>
               </div>
 
               <div className="flex items-center gap-2 text-gray-700">

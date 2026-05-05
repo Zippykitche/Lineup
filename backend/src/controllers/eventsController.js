@@ -65,7 +65,7 @@ export const createEvent = async (req, res) => {
   const type = normalizeOutputType(outputType || output_type);
   const attendees = attendeeIds || assignees || [];
   const actualPriority = priority || 'medium';
-  const actualIsPublic = isPublic || is_public || false;
+  const actualIsPublic = isPublic !== undefined ? isPublic : (is_public !== undefined ? is_public : true);
 
   const validOutputTypes = ['TV', 'Radio', 'Social', 'Web', 'Video', 'Photo'];
   if (!validOutputTypes.includes(type)) {
@@ -132,7 +132,7 @@ export const createEvent = async (req, res) => {
 export const getPublicEvents = async (req, res) => {
   try {
     const snapshot = await db.collection('events')
-      .where('type', '==', 'holiday')
+      .where('isPublic', '==', true)
       .get();
     const events = snapshot.docs.map(doc => normalizeEvent(doc.data(), doc.id));
     res.json({ data: events, status: 200 });

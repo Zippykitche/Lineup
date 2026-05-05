@@ -81,7 +81,8 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
         createdBy: currentUser?.id || '',
         status,
         outputType,
-        category
+        category,
+        isPublic: true
       });
 
       toast.success('Event created successfully');

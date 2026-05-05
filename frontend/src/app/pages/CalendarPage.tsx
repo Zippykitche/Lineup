@@ -16,7 +16,6 @@ import {
   isSameDay,
   isSameMonth,
   parseISO,
-  startOfDay,
 } from 'date-fns';
 import { Badge } from '../components/ui/badge';
 import { Event, EventStatus } from '../types';
@@ -45,10 +44,25 @@ export function CalendarPage() {
     }
   };
 
-  const userEvents = events;
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case 'News':
+        return { bg: '#dbeafe', border: '#93c5fd', text: '#1e40af' }; // Blue
+      case 'Sports':
+        return { bg: '#dcfce7', border: '#86efac', text: '#166534' }; // Green
+      case 'Entertainment':
+        return { bg: '#fef9c3', border: '#fde047', text: '#854d0e' }; // Yellow
+      case 'Politics':
+        return { bg: '#fee2e2', border: '#fca5a5', text: '#991b1b' }; // Red
+      case 'Business':
+        return { bg: '#f3e8ff', border: '#d8b4fe', text: '#6b21a8' }; // Purple
+      default:
+        return { bg: '#f3f4f6', border: '#d1d5db', text: '#374151' }; // Gray
+    }
+  };
 
   const getEventsForDate = (date: Date) => {
-    return userEvents.filter((event) => isSameDay(parseISO(event.date), date));
+    return events.filter((event) => isSameDay(parseISO(event.date), date));
   };
 
   const getCreatorName = (userId: string) => {
@@ -90,43 +104,33 @@ export function CalendarPage() {
             </div>
 
             <div className="space-y-1 max-h-24 overflow-y-auto">
-              {dayEvents.map((event, index) => (
-                <div
-                  key={event.id}
-                  className={`text-xs p-1 rounded cursor-pointer hover:bg-gray-100 border ${
-                    dayEvents.length > 4 ? 'py-0.5 px-1' : 'p-1.5'
-                  }`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedEvent(event);
-                  }}
-                  style={{
-                    backgroundColor: event.priority === 'urgent' ? '#fee2e2' :
-                                   event.priority === 'high' ? '#fef3c7' :
-                                   event.priority === 'medium' ? '#dbeafe' : '#f3f4f6',
-                    borderColor: event.priority === 'urgent' ? '#fca5a5' :
-                                event.priority === 'high' ? '#fcd34d' :
-                                event.priority === 'medium' ? '#93c5fd' : '#d1d5db'
-                  }}
-                >
-                  <div className={`font-medium truncate ${dayEvents.length > 4 ? 'text-[10px]' : 'text-xs'}`}>
-                    {event.title}
-                  </div>
-                  <div className={`text-gray-600 ${dayEvents.length > 4 ? 'text-[9px]' : 'text-[10px]'}`}>
-                    {event.startTime}
-                  </div>
-                  {dayEvents.length <= 4 && (
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      <Badge variant="outline" className="text-[9px]">
-                        {event.outputType}
-                      </Badge>
-                      <Badge className={`text-[9px] ${getEventStatusColor(event.status)}`}>
-                        {event.status}
-                      </Badge>
+              {dayEvents.map((event) => {
+                const colors = getCategoryColor(event.category || 'General');
+                return (
+                  <div
+                    key={event.id}
+                    className={`text-xs p-1 rounded cursor-pointer hover:opacity-80 border ${
+                      dayEvents.length > 4 ? 'py-0.5 px-1' : 'p-1.5'
+                    }`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedEvent(event);
+                    }}
+                    style={{
+                      backgroundColor: colors.bg,
+                      borderColor: colors.border,
+                      color: colors.text
+                    }}
+                  >
+                    <div className={`font-medium truncate ${dayEvents.length > 4 ? 'text-[10px]' : 'text-xs'}`}>
+                      {event.title}
                     </div>
-                  )}
-                </div>
-              ))}
+                    <div className={`${dayEvents.length > 4 ? 'text-[9px]' : 'text-[10px]'} opacity-80`}>
+                      {event.startTime}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         );
@@ -180,24 +184,32 @@ export function CalendarPage() {
           </div>
 
           <div className="space-y-2">
-            {dayEvents.map((event) => (
-              <div
-                key={event.id}
-                className="text-xs p-2 rounded cursor-pointer hover:bg-gray-100 border bg-white"
-                onClick={() => setSelectedEvent(event)}
-              >
-                <div className="font-medium truncate">{event.title}</div>
-                <div className="text-[10px] text-gray-600">{event.startTime} - {event.endTime}</div>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  <Badge variant="outline" className="text-[9px]">
-                    {event.outputType}
-                  </Badge>
-                  <Badge className={`text-[9px] ${getEventStatusColor(event.status)}`}>
-                    {event.status}
-                  </Badge>
+            {dayEvents.map((event) => {
+              const colors = getCategoryColor(event.category || 'General');
+              return (
+                <div
+                  key={event.id}
+                  className="text-xs p-2 rounded cursor-pointer hover:opacity-80 border"
+                  onClick={() => setSelectedEvent(event)}
+                  style={{
+                    backgroundColor: colors.bg,
+                    borderColor: colors.border,
+                    color: colors.text
+                  }}
+                >
+                  <div className="font-medium truncate">{event.title}</div>
+                  <div className="text-[10px] opacity-80">{event.startTime} - {event.endTime}</div>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    <Badge variant="outline" className="text-[9px] border-current opacity-70">
+                      {event.outputType}
+                    </Badge>
+                    <Badge className={`text-[9px] ${getEventStatusColor(event.status)}`}>
+                      {event.status}
+                    </Badge>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       );
@@ -244,6 +256,9 @@ export function CalendarPage() {
                       </Badge>
                       <Badge className={getEventStatusColor(event.status)}>
                         {event.status}
+                      </Badge>
+                      <Badge variant="outline" className="text-[10px]">
+                        {event.category}
                       </Badge>
                     </div>
 
