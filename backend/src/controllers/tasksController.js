@@ -52,8 +52,8 @@ export const createTaskHandler = async (req, res) => {
 // Get all tasks with pagination and filters
 export const getAllTasks = async (req, res) => {
   try {
-    // Admin and Editor only check
-    if (req.user.role !== 'super_admin' && req.user.role !== 'editor') {
+    // All authenticated users can see tasks
+    if (req.user.role !== 'super_admin' && req.user.role !== 'editor' && req.user.role !== 'assignee') {
       return res.status(403).json({ message: 'Forbidden' });
     }
 

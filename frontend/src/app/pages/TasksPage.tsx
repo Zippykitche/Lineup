@@ -11,6 +11,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+} from '../components/ui/tabs';
 import { Plus, Search } from 'lucide-react';
 import { CreateTaskDialog } from '../components/CreateTaskDialog';
 import { TaskDetailsDialog } from '../components/TaskDetailsDialog';
@@ -24,24 +29,26 @@ export function TasksPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterPriority, setFilterPriority] = useState<string>('all');
+  const [viewMode, setViewMode] = useState<'all' | 'mine'>(
+    currentUser?.role === 'assignee' ? 'mine' : 'all'
+  );
 
   const isSuperAdmin = currentUser?.role === 'super_admin';
   const isEditor = currentUser?.role === 'editor';
-  const isAssignee = currentUser?.role === 'assignee';
   const canCreateTask = isSuperAdmin || isEditor;
 
-  const userTasks = isAssignee
-    ? tasks.filter((task) => task.assigneeIds?.includes(currentUser?.id || ''))
-    : tasks;
+  const filteredTasks = tasks.filter((task) => {
+    const isMyTask = task.assigneeIds?.includes(currentUser?.id || '');
+    const matchesViewMode = viewMode === 'all' || isMyTask;
 
-  const filteredTasks = userTasks.filter((task) => {
     const matchesSearch =
       task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       task.description?.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesStatus = filterStatus === 'all' || task.status === filterStatus;
     const matchesPriority = filterPriority === 'all' || task.priority === filterPriority;
-    return matchesSearch && matchesStatus && matchesPriority;
+
+    return matchesViewMode && matchesSearch && matchesStatus && matchesPriority;
   });
 
   const getPriorityColor = (priority: TaskPriority) => {
@@ -60,7 +67,7 @@ export function TasksPage() {
   };
 
   const getAssigneeNames = (assigneeIds: string[]) => {
-    return assigneeIds.map(id => getUserName(id)).join(', ');
+    return (assigneeIds || []).map(id => getUserName(id)).join(', ');
   };
 
   const groupedTasks = {
@@ -98,10 +105,8 @@ export function TasksPage() {
                 {format(parseISO(task.dueDate), 'MMM d, yyyy')}
               </div>
               <div>
-                <span className="font-medium">
-                  {isAssignee ? 'Assigned by:' : 'Assignees:'}
-                </span>{' '}
-                {isAssignee ? getUserName(task.createdBy) : getAssigneeNames(task.assigneeIds || [])}
+                <span className="font-medium">Assignees:</span>{' '}
+                {getAssigneeNames(task.assigneeIds)}
               </div>
             </div>
           </div>
@@ -119,7 +124,15 @@ export function TasksPage() {
       <Card>
         <CardHeader>
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <CardTitle>{isAssignee ? 'My Tasks' : 'Tasks & Deliverables'}</CardTitle>
+            <div className="space-y-1">
+              <CardTitle>Tasks & Deliverables</CardTitle>
+              <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'all' | 'mine')}>
+                <TabsList>
+                  <TabsTrigger value="mine">My Tasks</TabsTrigger>
+                  <TabsTrigger value="all">All Tasks</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
             {canCreateTask && (
               <Button onClick={() => setShowCreateTask(true)}>
                 <Plus className="w-4 h-4 mr-2" />

@@ -31,7 +31,7 @@ export function DashboardPage() {
 
   const upcomingDeadlines = tasks
     .filter((task) => {
-      if (isAssignee && task.assigneeId !== currentUser?.id) {
+      if (isAssignee && !task.assigneeIds?.includes(currentUser?.id || '')) {
         return false;
       }
 
@@ -234,7 +234,7 @@ export function DashboardPage() {
                     <p className="text-xs text-gray-500 mt-1">
                       {isAssignee
                         ? `Assigned by: ${getUserName(task.createdBy)}`
-                        : `Assigned to: ${getUserName(task.assigneeId)}`}
+                        : `Assigned to: ${task.assigneeIds?.map(id => getUserName(id)).join(', ')}`}
                     </p>
                   </div>
                 ))}

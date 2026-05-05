@@ -53,7 +53,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const results = await Promise.allSettled([
         api.getUsers(),
         api.getEvents(),
-        currentUser.role === 'assignee' ? api.getMyTasks() : api.getTasks(),
+        api.getTasks({ limit: 100 }),
         api.getNotifications()
       ]);
 

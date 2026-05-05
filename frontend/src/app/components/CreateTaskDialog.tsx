@@ -96,7 +96,7 @@ export function CreateTaskDialog({ open, onOpenChange }: CreateTaskDialogProps) 
     setSelectedEventId('');
   };
 
-  const assignableUsers = users.filter((u) => u.role === 'assignee' && !u.suspended);
+  const assignableUsers = users.filter((u) => !u.suspended);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -157,7 +157,7 @@ export function CreateTaskDialog({ open, onOpenChange }: CreateTaskDialogProps) 
                       onCheckedChange={() => handleAssigneeToggle(user.id)}
                     />
                     <Label htmlFor={`assignee-${user.id}`} className="cursor-pointer flex-1">
-                      {user.fullName}
+                      {user.fullName} ({user.role})
                     </Label>
                   </div>
                 ))
