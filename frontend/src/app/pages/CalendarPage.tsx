@@ -47,19 +47,38 @@ export function CalendarPage() {
   const getCategoryColor = (category: string) => {
     switch (category) {
       case 'News':
-        return { bg: '#dbeafe', border: '#93c5fd', text: '#1e40af' }; // Blue
+        return 'bg-blue-100 text-blue-800 border-blue-200';
       case 'Sports':
-        return { bg: '#dcfce7', border: '#86efac', text: '#166534' }; // Green
+        return 'bg-green-100 text-green-800 border-green-200';
       case 'Entertainment':
-        return { bg: '#fef9c3', border: '#fde047', text: '#854d0e' }; // Yellow
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
       case 'Politics':
-        return { bg: '#fee2e2', border: '#fca5a5', text: '#991b1b' }; // Red
+        return 'bg-red-100 text-red-800 border-red-200';
       case 'Business':
-        return { bg: '#f3e8ff', border: '#d8b4fe', text: '#6b21a8' }; // Purple
+        return 'bg-purple-100 text-purple-800 border-purple-200';
       case 'General':
-        return { bg: '#e0f2fe', border: '#7dd3fc', text: '#0369a1' }; // Sky Blue
+        return 'bg-sky-100 text-sky-800 border-sky-200';
       default:
-        return { bg: '#f3f4f6', border: '#d1d5db', text: '#374151' }; // Gray
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const getCategoryStyles = (category: string) => {
+    switch (category) {
+      case 'News':
+        return { bg: '#dbeafe', border: '#bfdbfe', text: '#1e40af' };
+      case 'Sports':
+        return { bg: '#dcfce7', border: '#bbf7d0', text: '#166534' };
+      case 'Entertainment':
+        return { bg: '#fef9c3', border: '#fef08a', text: '#854d0e' };
+      case 'Politics':
+        return { bg: '#fee2e2', border: '#fecaca', text: '#991b1b' };
+      case 'Business':
+        return { bg: '#f3e8ff', border: '#e9d5ff', text: '#6b21a8' };
+      case 'General':
+        return { bg: '#e0f2fe', border: '#bae6fd', text: '#075985' };
+      default:
+        return { bg: '#f3f4f6', border: '#e5e7eb', text: '#1f2937' };
     }
   };
 
@@ -107,7 +126,7 @@ export function CalendarPage() {
 
             <div className="space-y-1 max-h-24 overflow-y-auto">
               {dayEvents.map((event) => {
-                const colors = getCategoryColor(event.category || 'General');
+                const colors = getCategoryStyles(event.category || 'General');
                 return (
                   <div
                     key={event.id}
@@ -184,7 +203,7 @@ export function CalendarPage() {
 
           <div className="space-y-2">
             {dayEvents.map((event) => {
-              const colors = getCategoryColor(event.category || 'General');
+              const colors = getCategoryStyles(event.category || 'General');
               return (
                 <div
                   key={event.id}
@@ -255,8 +274,8 @@ export function CalendarPage() {
                       <Badge className={getEventStatusColor(event.status)}>
                         {event.status}
                       </Badge>
-                      <Badge variant="outline" className="text-[10px]">
-                        {event.category}
+                      <Badge variant="outline" className={`text-[10px] ${getCategoryColor(event.category || 'General')}`}>
+                        {event.category || 'General'}
                       </Badge>
                     </div>
 

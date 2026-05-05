@@ -157,7 +157,7 @@ export function EventsPage() {
                       <Badge className={getEventStatusColor(event.status)}>
                         {event.status}
                       </Badge>
-                      <Badge className={getCategoryColor(event.category || 'General')}>
+                      <Badge variant="outline" className={getCategoryColor(event.category || 'General')}>
                         {event.category || 'General'}
                       </Badge>
                     </div>

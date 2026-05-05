@@ -121,7 +121,7 @@ export function EventDetailsDialog({
               <div className="flex items-center gap-3 flex-wrap">
                 <Badge variant="outline">{event.outputType}</Badge>
                 <Badge className={getEventStatusColor(status)}>{status}</Badge>
-                <Badge className={getCategoryColor(event.category || 'General')}>
+                <Badge variant="outline" className={getCategoryColor(event.category || 'General')}>
                   {event.category || 'General'}
                 </Badge>
               </div>

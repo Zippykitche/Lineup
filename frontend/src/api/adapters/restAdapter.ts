@@ -83,6 +83,7 @@ export class RestAdapter implements IApiAdapter {
       status: event.status,
       outputType: (event.output_type || event.outputType || 'TV').split(' ')[0] as any,
       priority: event.priority,
+      category: event.category || 'General',
       isPublic: event.is_public || event.isPublic,
     };
   }
@@ -267,6 +268,7 @@ export class RestAdapter implements IApiAdapter {
       title: event.title,
       date: event.date,
       description: event.description,
+      category: event.category,
       output_type: event.outputType === 'TV' ? 'TV Package' : 
                    event.outputType === 'Radio' ? 'Radio Script' :
                    event.outputType === 'Social' ? 'Social Graphic' : 'Web Article',
