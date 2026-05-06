@@ -5,6 +5,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Calendar } from '../components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
+import { ScrollArea } from '../components/ui/scroll-area';
 import { ChevronLeft, ChevronRight, Plus, CalendarIcon } from 'lucide-react';
 import { CreateEventDialog } from '../components/CreateEventDialog';
 import { EventDetailsDialog } from '../components/EventDetailsDialog';
@@ -118,20 +119,25 @@ export function CalendarPage() {
         const dayEvents = getEventsForDate(currentDay);
         const isCurrentMonth = isSameMonth(currentDay, monthStart);
         const isToday = isSameDay(currentDay, new Date());
+        const isSelected = selectedDay && isSameDay(currentDay, selectedDay);
 
         days.push(
           <div
             key={currentDay.toString()}
-            className={`min-h-40 border p-2 cursor-pointer ${
+            className={`min-h-40 border p-2 cursor-pointer transition-colors ${
               isCurrentMonth ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-700'
-            } ${isToday ? 'ring-2 ring-blue-500' : ''}`}
+            } ${isToday ? 'ring-2 ring-blue-500 ring-inset z-10' : ''} ${
+              isSelected && !isToday ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+            }`}
             onClick={() => {
               setSelectedDay(currentDay);
               setView('day');
             }}
           >
             <div
-              className={`text-sm mb-2 ${isToday ? 'font-bold text-blue-600' : 'text-gray-600'}`}
+              className={`text-sm mb-2 ${isToday ? 'font-bold text-blue-600' : 'text-gray-600'} ${
+                isSelected && !isToday ? 'font-semibold text-blue-700 dark:text-blue-400' : ''
+              }`}
             >
               {format(currentDay, 'd')}
             </div>
@@ -201,14 +207,23 @@ export function CalendarPage() {
       const currentDay = day;
       const dayEvents = getEventsForDate(currentDay);
       const isToday = isSameDay(currentDay, new Date());
+      const isSelected = selectedDay && isSameDay(currentDay, selectedDay);
 
       days.push(
         <div
           key={currentDay.toString()}
-          className={`min-h-48 border p-3 ${isToday ? 'ring-2 ring-blue-500' : ''}`}
+          className={`min-h-48 border p-3 cursor-pointer transition-colors ${
+            isToday ? 'ring-2 ring-blue-500 ring-inset z-10' : ''
+          } ${isSelected && !isToday ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}
+          onClick={() => {
+            setSelectedDay(currentDay);
+            setView('day');
+          }}
         >
           <div
-            className={`text-sm mb-3 font-medium ${isToday ? 'text-blue-600' : 'text-gray-600'}`}
+            className={`text-sm mb-3 font-medium ${isToday ? 'text-blue-600' : 'text-gray-600'} ${
+              isSelected && !isToday ? 'text-blue-700 dark:text-blue-400 font-bold' : ''
+            }`}
           >
             {format(currentDay, 'EEE d')}
           </div>
@@ -220,7 +235,10 @@ export function CalendarPage() {
                 <div
                   key={event.id}
                   className="text-xs p-2 rounded cursor-pointer hover:opacity-80 border"
-                  onClick={() => setSelectedEvent(event)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedEvent(event);
+                  }}
                   style={{
                     backgroundColor: colors.bg,
                     borderColor: colors.border,
@@ -315,8 +333,9 @@ export function CalendarPage() {
     } else if (view === 'week') {
       setCurrentDate(addDays(currentDate, -7));
     } else if (view === 'day') {
-      setCurrentDate(addDays(currentDate, -1));
-      if (selectedDay) setSelectedDay(addDays(selectedDay, -1));
+      const prevDate = addDays(selectedDay ?? currentDate, -1);
+      setCurrentDate(prevDate);
+      setSelectedDay(prevDate);
     }
   };
 
@@ -326,25 +345,26 @@ export function CalendarPage() {
     } else if (view === 'week') {
       setCurrentDate(addDays(currentDate, 7));
     } else if (view === 'day') {
-      setCurrentDate(addDays(currentDate, 1));
-      if (selectedDay) setSelectedDay(addDays(selectedDay, 1));
+      const nextDate = addDays(selectedDay ?? currentDate, 1);
+      setCurrentDate(nextDate);
+      setSelectedDay(nextDate);
     }
   };
 
   const handleToday = () => {
     const today = new Date();
     setCurrentDate(today);
-    if (view === 'day') {
-      setSelectedDay(today);
+    setSelectedDay(today);
+    if (view !== 'day') {
+      setView('month');
     }
   };
 
   const handleJumpToDate = (date: Date | undefined) => {
     if (date) {
       setCurrentDate(date);
-      if (view === 'day') {
-        setSelectedDay(date);
-      }
+      setSelectedDay(date);
+      setView('day'); // Switch to day view to go to exact date
       setDatePickerOpen(false);
     }
   };
@@ -442,14 +462,107 @@ export function CalendarPage() {
                     Jump to Date
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent
+                className="w-105 rounded-4xl border-0 bg-white p-6 shadow-2xl"
+                align="start"
+              >
+                <div className="space-y-5">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900">Select Date</h2>
+
+                      <div className="mt-4 flex gap-3">
+                        <select
+                          value={currentDate.getMonth()}
+                          onChange={(e) => {
+                            const newDate = new Date(currentDate);
+                            newDate.setMonth(Number(e.target.value));
+                            setCurrentDate(newDate);
+                          }}
+                          className="rounded-lg border-0 bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700 outline-none"
+                        >
+                          {Array.from({ length: 12 }).map((_, index) => (
+                            <option key={index} value={index}>
+                              {format(new Date(2025, index, 1), 'MMMM')}
+                            </option>
+                          ))}
+                        </select>
+
+                        <select
+                          value={currentDate.getFullYear()}
+                          onChange={(e) => {
+                            const newDate = new Date(currentDate);
+                            newDate.setFullYear(Number(e.target.value));
+                            setCurrentDate(newDate);
+                          }}
+                          className="rounded-lg border-0 bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700 outline-none"
+                        >
+                          {Array.from({ length: 11 }).map((_, index) => {
+                            const year = 2020 + index;
+                            return (
+                              <option key={year} value={year}>
+                                {year}
+                              </option>
+                            );
+                          })}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="rounded-2xl bg-orange-400 px-4 py-3 text-center shadow-md">
+                      <div className="text-4xl font-extrabold text-white leading-none">
+                        {format(selectedDay ?? currentDate, 'dd')}
+                      </div>
+                    </div>
+                  </div>
+
                   <Calendar
                     mode="single"
-                    selected={view === 'day' ? (selectedDay ?? currentDate) : currentDate}
-                    onSelect={handleJumpToDate}
+                    selected={selectedDay ?? currentDate}
+                    month={currentDate}
+                    onMonthChange={setCurrentDate}
+                    onSelect={(date) => {
+                      if (date) {
+                        setSelectedDay(date);
+                        setCurrentDate(date);
+                      }
+                    }}
                     initialFocus
+                    className="rounded-xl"
+                    classNames={{
+                      months: "space-y-4",
+                      month: "space-y-4",
+                      caption: "hidden",
+                      nav: "hidden",
+                      table: "w-full border-collapse",
+                      head_row: "grid grid-cols-7",
+                      head_cell:
+                        "text-center text-xs font-bold uppercase text-gray-800",
+                      row: "grid grid-cols-7 mt-2",
+                      cell: "text-center",
+                      day:
+                        "h-9 w-9 rounded-full text-sm font-semibold text-gray-900 hover:bg-orange-100 hover:text-orange-600",
+                      day_selected:
+                        "bg-orange-400 text-white hover:bg-orange-400 hover:text-white",
+                      day_today:
+                        "border border-orange-400 text-orange-500",
+                      day_outside:
+                        "text-gray-300 opacity-70",
+                      day_disabled:
+                        "text-gray-300 opacity-50",
+                    }}
                   />
-                </PopoverContent>
+
+                  <Button
+                    className="mx-auto flex w-44 rounded-xl bg-orange-400 font-bold text-white hover:bg-orange-500"
+                    onClick={() => {
+                      handleJumpToDate(selectedDay ?? currentDate);
+                    }}
+                  >
+                    Confirm
+                  </Button>
+                </div>
+              </PopoverContent>
               </Popover>
 
               <div className="flex items-center gap-2">
