@@ -463,106 +463,109 @@ export function CalendarPage() {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent
-                className="w-105 rounded-4xl border-0 bg-white p-6 shadow-2xl"
-                align="start"
-              >
-                <div className="space-y-5">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h2 className="text-2xl font-bold text-gray-900">Select Date</h2>
+              className="w-65 rounded-xl border bg-white p-4 shadow-lg"
+              align="start"
+            >
+              <div className="space-y-3">
+                {/* Header */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-base font-semibold text-gray-900">
+                      Select Date
+                    </h2>
 
-                      <div className="mt-4 flex gap-3">
-                        <select
-                          value={currentDate.getMonth()}
-                          onChange={(e) => {
-                            const newDate = new Date(currentDate);
-                            newDate.setMonth(Number(e.target.value));
-                            setCurrentDate(newDate);
-                          }}
-                          className="rounded-lg border-0 bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700 outline-none"
-                        >
-                          {Array.from({ length: 12 }).map((_, index) => (
-                            <option key={index} value={index}>
-                              {format(new Date(2025, index, 1), 'MMMM')}
+                    <div className="mt-2 flex gap-2">
+                      {/* Month */}
+                      <select
+                        value={currentDate.getMonth()}
+                        onChange={(e) => {
+                          const newDate = new Date(currentDate);
+                          newDate.setMonth(Number(e.target.value));
+                          setCurrentDate(newDate);
+                        }}
+                        className="rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-700 outline-none"
+                      >
+                        {Array.from({ length: 12 }).map((_, index) => (
+                          <option key={index} value={index}>
+                            {format(new Date(2025, index, 1), 'MMM')}
+                          </option>
+                        ))}
+                      </select>
+
+                      {/* Year */}
+                      <select
+                        value={currentDate.getFullYear()}
+                        onChange={(e) => {
+                          const newDate = new Date(currentDate);
+                          newDate.setFullYear(Number(e.target.value));
+                          setCurrentDate(newDate);
+                        }}
+                        className="rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-700 outline-none"
+                      >
+                        {Array.from({ length: 11 }).map((_, index) => {
+                          const year = 2020 + index;
+                          return (
+                            <option key={year} value={year}>
+                              {year}
                             </option>
-                          ))}
-                        </select>
-
-                        <select
-                          value={currentDate.getFullYear()}
-                          onChange={(e) => {
-                            const newDate = new Date(currentDate);
-                            newDate.setFullYear(Number(e.target.value));
-                            setCurrentDate(newDate);
-                          }}
-                          className="rounded-lg border-0 bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700 outline-none"
-                        >
-                          {Array.from({ length: 11 }).map((_, index) => {
-                            const year = 2020 + index;
-                            return (
-                              <option key={year} value={year}>
-                                {year}
-                              </option>
-                            );
-                          })}
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="rounded-2xl bg-orange-400 px-4 py-3 text-center shadow-md">
-                      <div className="text-4xl font-extrabold text-white leading-none">
-                        {format(selectedDay ?? currentDate, 'dd')}
-                      </div>
+                          );
+                        })}
+                      </select>
                     </div>
                   </div>
 
-                  <Calendar
-                    mode="single"
-                    selected={selectedDay ?? currentDate}
-                    month={currentDate}
-                    onMonthChange={setCurrentDate}
-                    onSelect={(date) => {
-                      if (date) {
-                        setSelectedDay(date);
-                        setCurrentDate(date);
-                      }
-                    }}
-                    initialFocus
-                    className="rounded-xl"
-                    classNames={{
-                      months: "space-y-4",
-                      month: "space-y-4",
-                      caption: "hidden",
-                      nav: "hidden",
-                      table: "w-full border-collapse",
-                      head_row: "grid grid-cols-7",
-                      head_cell:
-                        "text-center text-xs font-bold uppercase text-gray-800",
-                      row: "grid grid-cols-7 mt-2",
-                      cell: "text-center",
-                      day:
-                        "h-9 w-9 rounded-full text-sm font-semibold text-gray-900 hover:bg-orange-100 hover:text-orange-600",
-                      day_selected:
-                        "bg-orange-400 text-white hover:bg-orange-400 hover:text-white",
-                      day_today:
-                        "border border-orange-400 text-orange-500",
-                      day_outside:
-                        "text-gray-300 opacity-70",
-                      day_disabled:
-                        "text-gray-300 opacity-50",
-                    }}
-                  />
-
-                  <Button
-                    className="mx-auto flex w-44 rounded-xl bg-orange-400 font-bold text-white hover:bg-orange-500"
-                    onClick={() => {
-                      handleJumpToDate(selectedDay ?? currentDate);
-                    }}
-                  >
-                    Confirm
-                  </Button>
+                  {/* Date badge */}
+                  <div className="rounded-lg bg-blue-600 px-2 py-1 text-center">
+                    <div className="text-lg font-bold text-white leading-none">
+                      {format(selectedDay ?? currentDate, 'dd')}
+                    </div>
+                  </div>
                 </div>
-              </PopoverContent>
+
+                {/* Calendar */}
+                <Calendar
+                  mode="single"
+                  selected={selectedDay ?? currentDate}
+                  month={currentDate}
+                  onMonthChange={setCurrentDate}
+                  onSelect={(date) => {
+                    if (date) {
+                      setSelectedDay(date);
+                      setCurrentDate(date);
+                    }
+                  }}
+                  initialFocus
+                  className="rounded-md"
+                  classNames={{
+                    caption: "hidden",
+                    nav: "hidden",
+                    head_row: "grid grid-cols-7",
+                    head_cell:
+                      "text-center text-[10px] font-semibold text-gray-500",
+                    row: "grid grid-cols-7 mt-1",
+                    cell: "text-center",
+                    day:
+                      "h-7 w-7 rounded-full text-xs font-medium text-gray-800 hover:bg-blue-100 hover:text-blue-600",
+                    day_selected:
+                      "bg-blue-600 text-white hover:bg-blue-600",
+                    day_today:
+                      "border border-blue-600 text-blue-600",
+                    day_outside:
+                      "text-gray-300 opacity-60",
+                  }}
+                />
+
+                {/* Confirm button */}
+                <Button
+                  className="w-full rounded-md bg-blue-600 text-sm font-semibold text-white hover:bg-blue-700"
+                  onClick={() => {
+                    handleJumpToDate(selectedDay ?? currentDate);
+                  }}
+                >
+                  Confirm
+                </Button>
+              </div>
+            </PopoverContent>
               </Popover>
 
               <div className="flex items-center gap-2">
