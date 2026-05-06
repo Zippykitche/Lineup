@@ -134,6 +134,10 @@ export const updateUserRole = async (req, res) => {
   const { uid } = req.params;
   const { role } = req.body;
 
+  if (!uid) {
+    return res.status(400).json({ message: 'User ID is required' });
+  }
+
   const validRoles = ['super_admin', 'editor', 'assignee'];
   if (!validRoles.includes(role)) {
     return res.status(400).json({ message: 'Invalid role' });
@@ -144,10 +148,15 @@ export const updateUserRole = async (req, res) => {
     await db.collection('users').doc(uid).update({ role, updatedAt: new Date().toISOString() });
     
     const userDoc = await db.collection('users').doc(uid).get();
+    if (!userDoc.exists) {
+      console.error('User document not found after role update:', uid);
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
     res.json({ data: normalizeUser(userDoc.data()), message: 'Role updated successfully', status: 200 });
   } catch (err) {
-    console.error('Update role error:', err);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Update role error:', err.message, err.code);
+    res.status(500).json({ message: err.message || 'Server error' });
   }
 };
 
@@ -156,15 +165,24 @@ export const suspendUser = async (req, res) => {
   const { uid } = req.params;
 
   try {
+    if (!uid) {
+      return res.status(400).json({ message: 'User ID is required' });
+    }
+    
     // Disable in Firebase Auth and update Firestore
     await auth.updateUser(uid, { disabled: true });
     await db.collection('users').doc(uid).update({ suspended: true, updatedAt: new Date().toISOString() });
     
     const userDoc = await db.collection('users').doc(uid).get();
+    if (!userDoc.exists) {
+      console.error('User document not found after suspension:', uid);
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
     res.json({ data: normalizeUser(userDoc.data()), message: 'User suspended successfully', status: 200 });
   } catch (err) {
-    console.error('Suspend user error:', err);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Suspend user error:', err.message, err.code);
+    res.status(500).json({ message: err.message || 'Server error' });
   }
 };
 
@@ -173,15 +191,24 @@ export const unsuspendUser = async (req, res) => {
   const { uid } = req.params;
 
   try {
+    if (!uid) {
+      return res.status(400).json({ message: 'User ID is required' });
+    }
+    
     // Re-enable in Firebase Auth and update Firestore
     await auth.updateUser(uid, { disabled: false });
     await db.collection('users').doc(uid).update({ suspended: false, updatedAt: new Date().toISOString() });
     
     const userDoc = await db.collection('users').doc(uid).get();
+    if (!userDoc.exists) {
+      console.error('User document not found after unsuspension:', uid);
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
     res.json({ data: normalizeUser(userDoc.data()), message: 'User unsuspended successfully', status: 200 });
   } catch (err) {
-    console.error('Unsuspend user error:', err);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Unsuspend user error:', err.message, err.code);
+    res.status(500).json({ message: err.message || 'Server error' });
   }
 };
 
@@ -190,12 +217,16 @@ export const deleteUser = async (req, res) => {
   const { uid } = req.params;
 
   try {
+    if (!uid) {
+      return res.status(400).json({ message: 'User ID is required' });
+    }
+    
     await auth.deleteUser(uid);
     await db.collection('users').doc(uid).delete();
     res.json({ data: null, message: 'User deleted successfully', status: 200 });
   } catch (err) {
-    console.error('Delete user error:', err);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Delete user error:', err.message, err.code);
+    res.status(500).json({ message: err.message || 'Server error' });
   }
 };
 
