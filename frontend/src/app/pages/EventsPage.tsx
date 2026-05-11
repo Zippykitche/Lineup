@@ -14,7 +14,7 @@ import {
 import { Plus, Search, Calendar as CalendarIcon } from 'lucide-react';
 import { CreateEventDialog } from '../components/CreateEventDialog';
 import { EventDetailsDialog } from '../components/EventDetailsDialog';
-import { Event, EventStatus, TaskPriority } from '../types';
+import { Event, EventStatus } from '../types';
 import { format, parseISO } from 'date-fns';
 
 export function EventsPage() {
@@ -27,7 +27,6 @@ export function EventsPage() {
 
   const isSuperAdmin = currentUser?.role === 'super_admin';
   const isEditor = currentUser?.role === 'editor';
-  const isAssignee = currentUser?.role === 'assignee';
   const canCreateEvent = isSuperAdmin || isEditor;
 
   const filteredEvents = events.filter((event) => {
@@ -77,21 +76,18 @@ export function EventsPage() {
   };
 
   const sortedEvents = [...filteredEvents].sort((a, b) => {
-    // Combine date and time for a full comparison string
-    // Standardizing on ISO-like format for comparison: YYYY-MM-DDTHH:mm
-    const dateTimeStrA = `${a.date}T${a.startTime || '00:00'}`;
-    const dateTimeStrB = `${b.date}T${b.startTime || '00:00'}`;
+    // Robust string normalization for consistent sorting
+    const normalize = (val: string | undefined) => (val || '').split('T')[0];
+    const pad = (t: string | undefined) => {
+      if (!t) return '00:00';
+      if (t.length === 4 && t.includes(':')) return '0' + t;
+      return t;
+    };
     
-    const timeA = new Date(dateTimeStrA).getTime();
-    const timeB = new Date(dateTimeStrB).getTime();
+    const keyA = `${normalize(a.date)}T${pad(a.startTime)}`;
+    const keyB = `${normalize(b.date)}T${pad(b.startTime)}`;
     
-    // Handle invalid dates by pushing them to the end
-    if (isNaN(timeA) && isNaN(timeB)) return 0;
-    if (isNaN(timeA)) return 1;
-    if (isNaN(timeB)) return -1;
-    
-    // Reverse chronological: newer dates first
-    return timeB - timeA;
+    return keyB.localeCompare(keyA);
   });
 
   return (
