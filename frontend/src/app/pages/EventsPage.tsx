@@ -77,18 +77,21 @@ export function EventsPage() {
   };
 
   const sortedEvents = [...filteredEvents].sort((a, b) => {
-    const dateA = a.date || '';
-    const dateB = b.date || '';
-    const timeA = a.startTime || '00:00';
-    const timeB = b.startTime || '00:00';
+    // Combine date and time for a full comparison string
+    // Standardizing on ISO-like format for comparison: YYYY-MM-DDTHH:mm
+    const dateTimeStrA = `${a.date}T${a.startTime || '00:00'}`;
+    const dateTimeStrB = `${b.date}T${b.startTime || '00:00'}`;
     
-    const dateTimeA = new Date(`${dateA}T${timeA}`).getTime();
-    const dateTimeB = new Date(`${dateB}T${timeB}`).getTime();
+    const timeA = new Date(dateTimeStrA).getTime();
+    const timeB = new Date(dateTimeStrB).getTime();
     
-    if (isNaN(dateTimeA)) return 1;
-    if (isNaN(dateTimeB)) return -1;
+    // Handle invalid dates by pushing them to the end
+    if (isNaN(timeA) && isNaN(timeB)) return 0;
+    if (isNaN(timeA)) return 1;
+    if (isNaN(timeB)) return -1;
     
-    return dateTimeB - dateTimeA;
+    // Reverse chronological: newer dates first
+    return timeB - timeA;
   });
 
   return (
