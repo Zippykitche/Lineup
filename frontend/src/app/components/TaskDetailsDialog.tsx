@@ -94,12 +94,12 @@ export function TaskDetailsDialog({ task, open, onOpenChange }: TaskDetailsDialo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
+      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col w-full overflow-hidden">
         <DialogHeader>
-          <DialogTitle className="text-xl">{task.title}</DialogTitle>
+          <DialogTitle className="text-xl truncate">{task.title}</DialogTitle>
           <DialogDescription>Task details and status</DialogDescription>
         </DialogHeader>
-        <div className="overflow-y-auto flex-1 pr-2">
+        <div className="overflow-y-auto flex-1 pr-2 min-w-0">
           {isEditing ? (
             <EditTaskForm
               task={task}
@@ -111,7 +111,7 @@ export function TaskDetailsDialog({ task, open, onOpenChange }: TaskDetailsDialo
             />
           ) : (
             <div className="space-y-4">
-              <div className="flex items-center gap-4">
+              <div className="flex flex-wrap items-center gap-2">
                 <Badge className={getStatusColor(status)}>{status}</Badge>
                 <Badge className={getPriorityColor(task.priority)}>{task.priority} Priority</Badge>
               </div>
@@ -134,12 +134,12 @@ export function TaskDetailsDialog({ task, open, onOpenChange }: TaskDetailsDialo
                   {(() => {
                     const linkedEvent = events.find(e => e.id === task.eventId);
                     return linkedEvent ? (
-                      <div className="border rounded-lg p-3 bg-blue-50">
-                        <div className="font-medium text-blue-900">{linkedEvent.title}</div>
-                        <div className="text-sm text-blue-700 mt-1">
+                      <div className="border rounded-lg p-3 bg-blue-50 min-w-0">
+                        <div className="font-medium text-blue-900 truncate">{linkedEvent.title}</div>
+                        <div className="text-sm text-blue-700 mt-1 break-words">
                           {format(parseISO(linkedEvent.date), 'MMM d, yyyy')} • {linkedEvent.startTime} - {linkedEvent.endTime}
                         </div>
-                        <Badge variant="outline" className="mt-2 text-xs">
+                        <Badge variant="outline" className="mt-2 text-xs inline-block">
                           {linkedEvent.outputType}
                         </Badge>
                       </div>
@@ -166,16 +166,16 @@ export function TaskDetailsDialog({ task, open, onOpenChange }: TaskDetailsDialo
                       ).slice(0, 3); // Limit to 3 events
 
                       return (
-                        <div key={assignee.id} className="border rounded-lg p-3">
-                          <div className="flex items-center gap-3 mb-2">
-                            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                        <div key={assignee.id} className="border rounded-lg p-3 min-w-0">
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-2">
+                            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
                               <User className="w-4 h-4 text-blue-600" />
                             </div>
-                            <div className="flex-1">
-                              <p className="font-medium">{assignee.fullName}</p>
-                              <p className="text-sm text-gray-600">{assignee.workEmail}</p>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium truncate">{assignee.fullName}</p>
+                              <p className="text-sm text-gray-600 truncate">{assignee.workEmail}</p>
                             </div>
-                            <Badge variant="outline" className="capitalize">
+                            <Badge variant="outline" className="capitalize flex-shrink-0">
                               {assignee.role.replace('_', ' ')}
                             </Badge>
                           </div>
@@ -209,7 +209,7 @@ export function TaskDetailsDialog({ task, open, onOpenChange }: TaskDetailsDialo
               )}
 
               {canUpdateStatus && (
-                <div className="pt-4 border-t">
+                <div className="pt-4 border-t min-w-0">
                   <h4 className="font-medium mb-2">Update Status</h4>
                   <span className="text-xs text-gray-500 mb-2 block italic">
                     {isAssignee && !isSuperAdmin && !isEditor 
@@ -217,7 +217,7 @@ export function TaskDetailsDialog({ task, open, onOpenChange }: TaskDetailsDialo
                       : "Admins and Editors can update all task details."}
                   </span>
                   <Select value={status} onValueChange={(v) => handleStatusChange(v as TaskStatus)}>
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -229,7 +229,7 @@ export function TaskDetailsDialog({ task, open, onOpenChange }: TaskDetailsDialo
                 </div>
               )}
 
-              <div className="sticky bottom-0 bg-white flex justify-end gap-2 pt-4 border-t">
+              <div className="sticky bottom-0 bg-white flex flex-wrap justify-end gap-2 pt-4 border-t">
                 {canEditTask && (
                   <Button variant="outline" onClick={() => setIsEditing(true)}>
                     Edit Task
