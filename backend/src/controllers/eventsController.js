@@ -1,6 +1,7 @@
 import { db } from '../config/firebase.js';
 import { sendNotificationToUsers } from '../services/notificationService.js';
 import { getHolidays } from '../services/eventService.js';
+import { sendEventNotificationEmail } from '../services/emailService.js';
 import { sendEmail } from '../services/emailService.js';
 import { getAllUsers } from '../services/userService.js';
 
@@ -105,6 +106,9 @@ export const createEvent = async (req, res) => {
     };
 
     await eventRef.set(event);
+    console.log('✅ EVENT CREATED:', eventRef.id);
+
+    // Notify attendees via in-app notifications
     
     // Notify attendees
     if (attendees.length > 0) {
@@ -114,6 +118,11 @@ export const createEvent = async (req, res) => {
         targetId: eventRef.id,
         targetType: 'event'
       });
+    }
+
+    // Send email notifications to attendees
+    if (attendees.length > 0) {
+      await sendEventNotificationEmail(event, attendees);
     }
 
     res.status(201).json({ data: event, status: 201 });
@@ -146,11 +155,11 @@ export const getPublicEvents = async (req, res) => {
       }
     });
 
-    // Sort descending by date and time
+    // Sort merged events: chronological order (earliest/upcoming first)
     mergedEvents.sort((a, b) => {
-      const keyA = `${a.date}T${a.startTime}`;
-      const keyB = `${b.date}T${b.startTime}`;
-      return keyB.localeCompare(keyA);
+      const dateTimeA = `${a.date}T${a.startTime || '00:00'}`;
+      const dateTimeB = `${b.date}T${b.startTime || '00:00'}`;
+      return dateTimeA.localeCompare(dateTimeB);
     });
 
     res.json({ data: mergedEvents, status: 200 });
@@ -163,16 +172,12 @@ export const getPublicEvents = async (req, res) => {
 // Get all events - Editor and Super Admin
 export const getAllEvents = async (req, res) => {
   try {
-    const snapshot = await db.collection('events').orderBy('date', 'desc').get();
+    const snapshot = await db.collection('events')
+      .orderBy('date')
+      .orderBy('startTime')
+      .get();
     const events = snapshot.docs.map(doc => normalizeEvent(doc.data(), doc.id));
     
-    // Final sort to handle time consistency
-    events.sort((a, b) => {
-      const keyA = `${a.date}T${a.startTime}`;
-      const keyB = `${b.date}T${b.startTime}`;
-      return keyB.localeCompare(keyA);
-    });
-
     res.json({ data: events, status: 200 });
   } catch (err) {
     console.error(err);
@@ -185,17 +190,12 @@ export const getMyEvents = async (req, res) => {
   try {
     const snapshot = await db.collection('events')
       .where('attendeeIds', 'array-contains', req.user.uid)
-      .orderBy('date', 'desc')
+      .orderBy('date')
+      .orderBy('startTime')
       .get();
 
     const events = snapshot.docs.map(doc => normalizeEvent(doc.data(), doc.id));
     
-    events.sort((a, b) => {
-      const keyA = `${a.date}T${a.startTime}`;
-      const keyB = `${b.date}T${b.startTime}`;
-      return keyB.localeCompare(keyA);
-    });
-
     res.json({ data: events, status: 200 });
   } catch (err) {
     console.error(err);
