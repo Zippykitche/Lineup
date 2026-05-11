@@ -5,12 +5,21 @@ import { sendEmail } from '../services/emailService.js';
 import { getAllUsers } from '../services/userService.js';
 
 const normalizeEvent = (eventData = {}, id = null) => {
+  // Ensure date is a string YYYY-MM-DD
+  let date = eventData.date || '';
+  if (date && typeof date === 'object' && date.toDate) {
+    // Handle Firestore Timestamp
+    date = date.toDate().toISOString().split('T')[0];
+  } else if (date && typeof date === 'string') {
+    date = date.split('T')[0];
+  }
+
   return {
     id: id || eventData.id || null,
     title: eventData.title || null,
-    date: eventData.date || null,
-    startTime: eventData.startTime || eventData.start_time || null,
-    endTime: eventData.endTime || eventData.end_time || null,
+    date: date || null,
+    startTime: eventData.startTime || eventData.start_time || '00:00',
+    endTime: eventData.endTime || eventData.end_time || '23:59',
     description: eventData.description || null,
     attendeeIds: eventData.attendeeIds || eventData.assignees || eventData.attendees || [],
     createdBy: eventData.createdBy || eventData.created_by || null,
@@ -47,10 +56,10 @@ export const createEvent = async (req, res) => {
   const {
     title,
     date,
-    startTime,
     start_time,
-    endTime,
+    startTime,
     end_time,
+    endTime,
     description,
     outputType,
     output_type,
@@ -70,26 +79,8 @@ export const createEvent = async (req, res) => {
   const actualPriority = priority || 'medium';
   const actualIsPublic = isPublic !== undefined ? isPublic : (is_public !== undefined ? is_public : true);
 
-  const validOutputTypes = ['TV', 'Radio', 'Social', 'Web', 'Video', 'Photo'];
-  if (!validOutputTypes.includes(type)) {
-    return res.status(400).json({ message: 'Invalid output type' });
-  }
-
-  const validPriorities = ['low', 'medium', 'high', 'urgent'];
-  if (!validPriorities.includes(actualPriority)) {
-    return res.status(400).json({ message: 'Invalid priority. Must be one of: low, medium, high, urgent' });
-  }
-
   if (!title || !date || !actualStartTime || !actualEndTime) {
     return res.status(400).json({ message: 'Missing required fields: title, date, startTime, endTime' });
-  }
-
-  // Validate no past dates
-  const eventDate = new Date(date);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  if (eventDate < today) {
-    return res.status(400).json({ message: 'Cannot create events in the past' });
   }
 
   try {
@@ -114,9 +105,8 @@ export const createEvent = async (req, res) => {
     };
 
     await eventRef.set(event);
-    console.log('✅ EVENT CREATED:', eventRef.id);
-
-    // Notify attendees in-app
+    
+    // Notify attendees
     if (attendees.length > 0) {
       await sendNotificationToUsers(attendees, {
         message: `New event created: ${title} on ${date}`,
@@ -126,30 +116,9 @@ export const createEvent = async (req, res) => {
       });
     }
 
-    // Send email notifications to all users
-    try {
-      const users = await getAllUsers();
-      const emails = users.map(u => u.email).filter(e => !!e);
-      
-      if (emails.length > 0) {
-        await sendEmail(
-          emails,
-          `New Event Created: ${title}`,
-          `A new event has been created: ${title}\nDate: ${date}\nDescription: ${description || 'No description provided.'}`,
-          `<h3>New Event Created</h3>
-           <p><strong>Title:</strong> ${title}</p>
-           <p><strong>Date:</strong> ${date}</p>
-           <p><strong>Description:</strong> ${description || 'No description provided.'}</p>
-           <p>Log in to Lineup to view more details.</p>`
-        );
-      }
-    } catch (notifError) {
-      console.error("❌ EVENT EMAIL NOTIFICATION ERROR:", notifError.message);
-    }
-
     res.status(201).json({ data: event, status: 201 });
   } catch (err) {
-    console.error('❌ CREATE EVENT ERROR:', err);
+    console.error('CREATE EVENT ERROR:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -160,25 +129,28 @@ export const createEvent = async (req, res) => {
  */
 export const getPublicEvents = async (req, res) => {
   try {
-    // 1. Fetch public events from Firestore
     const snapshot = await db.collection('events')
       .where('isPublic', '==', true)
       .get();
     const firestoreEvents = snapshot.docs.map(doc => normalizeEvent(doc.data(), doc.id));
     
-    // 2. Fetch holidays from Nager.Date API (Defaults to current year)
     const year = new Date().getFullYear();
     const holidays = await getHolidays(year);
     
-    // 3. Merge results
-    // We avoid duplicates by checking for title-date collisions
     const firestoreEventKeys = new Set(firestoreEvents.map(e => `${e.title}-${e.date}`));
     
     const mergedEvents = [...firestoreEvents];
     holidays.forEach(h => {
       if (!firestoreEventKeys.has(`${h.title}-${h.date}`)) {
-        mergedEvents.push(h);
+        mergedEvents.push(normalizeEvent(h));
       }
+    });
+
+    // Sort descending by date and time
+    mergedEvents.sort((a, b) => {
+      const keyA = `${a.date}T${a.startTime}`;
+      const keyB = `${b.date}T${b.startTime}`;
+      return keyB.localeCompare(keyA);
     });
 
     res.json({ data: mergedEvents, status: 200 });
@@ -191,8 +163,16 @@ export const getPublicEvents = async (req, res) => {
 // Get all events - Editor and Super Admin
 export const getAllEvents = async (req, res) => {
   try {
-    const snapshot = await db.collection('events').orderBy('date').get();
+    const snapshot = await db.collection('events').orderBy('date', 'desc').get();
     const events = snapshot.docs.map(doc => normalizeEvent(doc.data(), doc.id));
+    
+    // Final sort to handle time consistency
+    events.sort((a, b) => {
+      const keyA = `${a.date}T${a.startTime}`;
+      const keyB = `${b.date}T${b.startTime}`;
+      return keyB.localeCompare(keyA);
+    });
+
     res.json({ data: events, status: 200 });
   } catch (err) {
     console.error(err);
@@ -205,10 +185,17 @@ export const getMyEvents = async (req, res) => {
   try {
     const snapshot = await db.collection('events')
       .where('attendeeIds', 'array-contains', req.user.uid)
-      .orderBy('date')
+      .orderBy('date', 'desc')
       .get();
 
     const events = snapshot.docs.map(doc => normalizeEvent(doc.data(), doc.id));
+    
+    events.sort((a, b) => {
+      const keyA = `${a.date}T${a.startTime}`;
+      const keyB = `${b.date}T${b.startTime}`;
+      return keyB.localeCompare(keyA);
+    });
+
     res.json({ data: events, status: 200 });
   } catch (err) {
     console.error(err);
@@ -221,23 +208,18 @@ export const updateEvent = async (req, res) => {
   const { id } = req.params;
 
   try {
-    // Validate priority if provided
-    if (req.body.priority) {
-      const validPriorities = ['low', 'medium', 'high', 'urgent'];
-      if (!validPriorities.includes(req.body.priority)) {
-        return res.status(400).json({ message: 'Invalid priority. Must be one of: low, medium, high, urgent' });
-      }
-    }
-
     const updatePayload = {
       ...req.body,
-      outputType: normalizeOutputType(req.body.outputType || req.body.output_type),
-      attendeeIds: req.body.attendeeIds || req.body.assignees || req.body.attendee_ids,
-      startTime: req.body.startTime || req.body.start_time,
-      endTime: req.body.endTime || req.body.end_time,
-      isPublic: req.body.isPublic !== undefined ? req.body.isPublic : req.body.is_public,
       updatedAt: new Date().toISOString(),
     };
+
+    if (req.body.outputType || req.body.output_type) {
+      updatePayload.outputType = normalizeOutputType(req.body.outputType || req.body.output_type);
+    }
+    
+    if (req.body.attendeeIds || req.body.assignees) {
+      updatePayload.attendeeIds = req.body.attendeeIds || req.body.assignees;
+    }
 
     Object.keys(updatePayload).forEach(
       (key) => updatePayload[key] === undefined && delete updatePayload[key]
@@ -245,7 +227,6 @@ export const updateEvent = async (req, res) => {
 
     await db.collection('events').doc(id).update(updatePayload);
     
-    // Fetch the full updated event for the response
     const updatedDoc = await db.collection('events').doc(id).get();
     res.json({ 
       data: normalizeEvent(updatedDoc.data(), id), 
@@ -258,15 +239,10 @@ export const updateEvent = async (req, res) => {
   }
 };
 
-// Update status - Assignee can update their own tasks
+// Update status
 export const updateStatus = async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
-
-  const validStatuses = ['Planned', 'In Progress', 'Done'];
-  if (!validStatuses.includes(status)) {
-    return res.status(400).json({ message: 'Invalid status' });
-  }
 
   try {
     await db.collection('events').doc(id).update({
@@ -280,7 +256,7 @@ export const updateStatus = async (req, res) => {
   }
 };
 
-// Delete event - Super Admin only
+// Delete event
 export const deleteEvent = async (req, res) => {
   const { id } = req.params;
 
@@ -291,4 +267,4 @@ export const deleteEvent = async (req, res) => {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
   }
-}
+};

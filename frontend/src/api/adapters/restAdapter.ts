@@ -72,12 +72,27 @@ export class RestAdapter implements IApiAdapter {
 
   private mapEvent(event: any): Event {
     if (!event) return {} as Event;
+    
+    // Robust date normalization
+    let dateStr = event.date || '';
+    if (dateStr && typeof dateStr === 'object') {
+      if (dateStr._seconds) {
+        // Firestore Timestamp object
+        dateStr = new Date(dateStr._seconds * 1000).toISOString().split('T')[0];
+      } else if (dateStr.toDate) {
+        // Firestore Timestamp class
+        dateStr = dateStr.toDate().toISOString().split('T')[0];
+      }
+    } else if (typeof dateStr === 'string') {
+      dateStr = dateStr.split('T')[0];
+    }
+
     return {
       id: event.id,
       title: event.title,
-      date: event.date,
-      startTime: event.start_time || event.startTime || '09:00',
-      endTime: event.end_time || event.endTime || '10:00',
+      date: dateStr,
+      startTime: event.start_time || event.startTime || '00:00',
+      endTime: event.end_time || event.endTime || '23:59',
       description: event.description,
       attendeeIds: event.assignees || event.attendeeIds || [],
       createdBy: event.created_by || event.createdBy,
@@ -86,6 +101,7 @@ export class RestAdapter implements IApiAdapter {
       priority: event.priority,
       category: event.category || 'General',
       isPublic: event.is_public || event.isPublic,
+      type: event.type
     };
   }
 
@@ -182,7 +198,7 @@ export class RestAdapter implements IApiAdapter {
     localStorage.removeItem('token');
   }
 
-  async register(user: Partial<User> & { password?: string }): Promise<ApiResponse<User>> {
+  async register(user: Partial<User> & { password?: string }): Promise<boolean> {
     const response = await this.request<any>('/auth/create-user', {
       method: 'POST',
       body: JSON.stringify({
