@@ -65,6 +65,8 @@ export function EventsPage() {
         return 'bg-purple-100 text-purple-800 border-purple-200';
       case 'General':
         return 'bg-sky-100 text-sky-800 border-sky-200';
+      case 'Public Holiday':
+        return 'bg-orange-100 text-orange-800 border-orange-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
@@ -75,8 +77,17 @@ export function EventsPage() {
   };
 
   const sortedEvents = [...filteredEvents].sort((a, b) => {
-    const dateTimeA = new Date(`${a.date}T${a.startTime || '00:00'}`).getTime();
-    const dateTimeB = new Date(`${b.date}T${b.startTime || '00:00'}`).getTime();
+    const dateA = a.date || '';
+    const dateB = b.date || '';
+    const timeA = a.startTime || '00:00';
+    const timeB = b.startTime || '00:00';
+    
+    const dateTimeA = new Date(`${dateA}T${timeA}`).getTime();
+    const dateTimeB = new Date(`${dateB}T${timeB}`).getTime();
+    
+    if (isNaN(dateTimeA)) return 1;
+    if (isNaN(dateTimeB)) return -1;
+    
     return dateTimeB - dateTimeA;
   });
 
@@ -144,44 +155,61 @@ export function EventsPage() {
                 <p className="text-gray-400 text-sm">Try adjusting your filters or search term</p>
               </div>
             ) : (
-              sortedEvents.map((event) => (
-                <div
-                  key={event.id}
-                  className="flex flex-col md:flex-row md:items-center justify-between p-4 border rounded-lg hover:shadow-md transition-all cursor-pointer bg-white gap-4"
-                  onClick={() => setSelectedEvent(event)}
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <h4 className="font-semibold text-gray-900 truncate">{event.title}</h4>
-                      <Badge variant="outline" className="text-[10px] uppercase">
-                        {event.outputType}
-                      </Badge>
-                      <Badge className={getEventStatusColor(event.status)}>
-                        {event.status}
-                      </Badge>
-                      <Badge variant="outline" className={getCategoryColor(event.category || 'General')}>
-                        {event.category || 'General'}
-                      </Badge>
+              sortedEvents.map((event) => {
+                const isSystemHoliday = event.type === 'holiday' && event.createdBy === 'system';
+                
+                return (
+                  <div
+                    key={event.id}
+                    className="flex flex-col md:flex-row md:items-center justify-between p-4 border rounded-lg hover:shadow-md transition-all cursor-pointer bg-white gap-4"
+                    onClick={() => setSelectedEvent(event)}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <h4 className="font-semibold text-gray-900 truncate">{event.title}</h4>
+                        {!isSystemHoliday && (
+                          <Badge variant="outline" className="text-[10px] uppercase">
+                            {event.outputType}
+                          </Badge>
+                        )}
+                        {(!isSystemHoliday || event.status !== (new Date(event.date) < new Date().setHours(0,0,0,0) ? 'Done' : 'Planned')) && (
+                          <Badge className={getEventStatusColor(event.status)}>
+                            {event.status}
+                          </Badge>
+                        )}
+                        {(event.category && (event.category !== 'Public Holiday' || !isSystemHoliday)) && (
+                          <Badge variant="outline" className={getCategoryColor(event.category)}>
+                            {event.category}
+                          </Badge>
+                        )}
+                        {isSystemHoliday && event.category === 'Public Holiday' && (
+                          <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-200">
+                            Public Holiday
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-600 line-clamp-1 mb-2">
+                        {event.description}
+                      </p>
+                      <div className="flex items-center gap-4 text-xs text-gray-500">
+                        <span className="flex items-center gap-1">
+                          <CalendarIcon className="w-3 h-3" />
+                          {format(parseISO(event.date), 'MMMM d, yyyy')}
+                        </span>
+                        <span>
+                          {event.startTime} - {event.endTime}
+                        </span>
+                      </div>
                     </div>
-                    <p className="text-sm text-gray-600 line-clamp-1 mb-2">
-                      {event.description}
-                    </p>
-                    <div className="flex items-center gap-4 text-xs text-gray-500">
-                      <span className="flex items-center gap-1">
-                        <CalendarIcon className="w-3 h-3" />
-                        {format(parseISO(event.date), 'MMMM d, yyyy')}
-                      </span>
-                      <span>
-                        {event.startTime} - {event.endTime}
+                    <div className="flex flex-col items-end gap-1 text-xs text-gray-500 shrink-0">
+                      <span>{isSystemHoliday ? 'Source' : 'Created by'}</span>
+                      <span className="font-medium text-gray-700">
+                        {isSystemHoliday ? 'Public Calendar' : getCreatorName(event.createdBy)}
                       </span>
                     </div>
                   </div>
-                  <div className="flex flex-col items-end gap-1 text-xs text-gray-500 shrink-0">
-                    <span>Created by</span>
-                    <span className="font-medium text-gray-700">{getCreatorName(event.createdBy)}</span>
-                  </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </CardContent>
