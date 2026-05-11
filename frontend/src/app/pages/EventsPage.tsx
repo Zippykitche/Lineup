@@ -47,15 +47,26 @@ export function EventsPage() {
 
   // SORT EVENTS FROM MOST RECENT TO OLDEST
   const sortedEvents = [...filteredEvents].sort((a, b) => {
-    const pad = (t: string | undefined) => {
-      if (!t) return '00:00';
-      if (t.length === 4 && t.includes(':')) return '0' + t;
-      return t;
-    };
-    const keyA = `${a.date || ''}T${pad(a.startTime)}`;
-    const keyB = `${b.date || ''}T${pad(b.startTime)}`;
-    return keyB.localeCompare(keyA);
-  });
+  const getEventTime = (event: Event) => {
+    const date = event.date?.split('T')[0];
+
+    if (!date) return 0;
+
+    const time = event.startTime || '00:00';
+
+    return new Date(`${date}T${time}`).getTime();
+  };
+
+  console.log(
+  sortedEvents.map((event) => ({
+    title: event.title,
+    date: event.date,
+    startTime: event.startTime,
+  }))
+);
+
+  return getEventTime(b) - getEventTime(a);
+});
 
   const getEventStatusColor = (status: EventStatus) => {
     switch (status) {
