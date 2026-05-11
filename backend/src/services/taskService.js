@@ -1,4 +1,6 @@
 import { db } from '../config/firebase.js';
+import { sendEmail } from './emailService.js';
+import { getUserById } from './userService.js';
 
 // CREATE TASK
 export const createTask = async (taskData, userId) => {
@@ -13,6 +15,36 @@ export const createTask = async (taskData, userId) => {
     const docRef = await db.collection('tasks').add(newTask);
 
     console.log('✅ TASK CREATED:', docRef.id);
+
+    // Send email notifications to assignees
+    try {
+      if (newTask.assigneeIds && newTask.assigneeIds.length > 0) {
+        const assigneeEmails = [];
+        for (const assigneeId of newTask.assigneeIds) {
+          const user = await getUserById(assigneeId);
+          if (user && user.email) {
+            assigneeEmails.push(user.email);
+          }
+        }
+
+        if (assigneeEmails.length > 0) {
+          await sendEmail(
+            assigneeEmails,
+            `New Task Assigned: ${newTask.title}`,
+            `A new task has been assigned to you: ${newTask.title}\nDue Date: ${newTask.dueDate}\nPriority: ${newTask.priority}`,
+            `<h3>New Task Assigned</h3>
+             <p><strong>Title:</strong> ${newTask.title}</p>
+             <p><strong>Due Date:</strong> ${newTask.dueDate}</p>
+             <p><strong>Priority:</strong> ${newTask.priority}</p>
+             <p><strong>Description:</strong> ${newTask.description || 'No description provided.'}</p>
+             <p>Log in to Lineup to view and complete your task.</p>`
+          );
+        }
+      }
+    } catch (notifError) {
+      console.error("❌ TASK NOTIFICATION ERROR:", notifError.message);
+    }
+
     return { id: docRef.id, ...newTask };
   } catch (error) {
     console.error('❌ CREATE TASK ERROR:', error.message);

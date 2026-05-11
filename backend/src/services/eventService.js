@@ -1,5 +1,7 @@
 import { db } from "../config/firebase.js";
 import axios from "axios";
+import { sendEmail } from "./emailService.js";
+import { getAllUsers } from "./userService.js";
 
 let holidayCache = {
   year: null,
@@ -74,6 +76,28 @@ export const createEvent = async (eventData, userId) => {
     const docRef = await db.collection("events").add(newEvent);
 
     console.log("✅ EVENT CREATED:", docRef.id);
+
+    // Send email notifications to all users
+    try {
+      const users = await getAllUsers();
+      const emails = users.map(u => u.email).filter(e => !!e);
+      
+      if (emails.length > 0) {
+        await sendEmail(
+          emails,
+          `New Event Created: ${newEvent.title}`,
+          `A new event has been created: ${newEvent.title}\nDate: ${newEvent.date}\nDescription: ${newEvent.description || 'No description provided.'}`,
+          `<h3>New Event Created</h3>
+           <p><strong>Title:</strong> ${newEvent.title}</p>
+           <p><strong>Date:</strong> ${newEvent.date}</p>
+           <p><strong>Description:</strong> ${newEvent.description || 'No description provided.'}</p>
+           <p>Log in to Lineup to view more details.</p>`
+        );
+      }
+    } catch (notifError) {
+      console.error("❌ EVENT NOTIFICATION ERROR:", notifError.message);
+    }
+
     return { id: docRef.id, ...newEvent };
   } catch (error) {
     console.error("❌ CREATE EVENT ERROR:", error.message);

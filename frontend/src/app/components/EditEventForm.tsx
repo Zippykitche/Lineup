@@ -3,6 +3,7 @@ import { useApp } from '../context/AppContext';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
+import { Checkbox } from './ui/checkbox';
 import { Event } from '../types';
 import { toast } from 'sonner';
 import { LoadingSpinner } from './ui/loading-spinner';
@@ -21,7 +22,7 @@ interface Props {
 }
 
 export function EditEventForm({ event, onClose, onSave }: Props) {
-  const { updateEvent } = useApp();
+  const { updateEvent, users } = useApp();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [title, setTitle] = useState(event.title);
@@ -30,6 +31,7 @@ export function EditEventForm({ event, onClose, onSave }: Props) {
   const [endTime, setEndTime] = useState(event.endTime);
   const [description, setDescription] = useState(event.description);
   const [category, setCategory] = useState(event.category || 'General');
+  const [selectedAttendees, setSelectedAttendees] = useState<string[]>(event.attendeeIds || []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,6 +56,7 @@ export function EditEventForm({ event, onClose, onSave }: Props) {
         endTime,
         description,
         category,
+        attendeeIds: selectedAttendees,
       });
       toast.success('Event updated successfully');
       onSave();
@@ -64,6 +67,14 @@ export function EditEventForm({ event, onClose, onSave }: Props) {
       setIsSubmitting(false);
     }
   };
+
+  const toggleAttendee = (userId: string) => {
+    setSelectedAttendees((prev) =>
+      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]
+    );
+  };
+
+  const assignableUsers = users.filter((user) => user.role !== 'super_admin');
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -123,6 +134,31 @@ export function EditEventForm({ event, onClose, onSave }: Props) {
           onChange={(e) => setDescription(e.target.value)}
           disabled={isSubmitting}
         />
+      </div>
+
+      <div className="space-y-2">
+        <Label>Assign Team Members</Label>
+        <div className="border rounded-lg p-4 space-y-3 max-h-48 overflow-y-auto bg-gray-50/50">
+          {assignableUsers.map((user) => (
+            <div key={user.id} className="flex items-center space-x-2">
+              <Checkbox
+                id={`edit-attendee-${user.id}`}
+                checked={selectedAttendees.includes(user.id)}
+                onCheckedChange={() => toggleAttendee(user.id)}
+                disabled={isSubmitting}
+              />
+              <label
+                htmlFor={`edit-attendee-${user.id}`}
+                className="flex-1 cursor-pointer text-sm"
+              >
+                <p className="font-medium">{user.fullName}</p>
+                <p className="text-xs text-gray-600">
+                  {user.workEmail} • {user.role.replace('_', ' ')}
+                </p>
+              </label>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div>

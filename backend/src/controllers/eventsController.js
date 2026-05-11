@@ -1,6 +1,8 @@
 import { db } from '../config/firebase.js';
 import { sendNotificationToUsers } from '../services/notificationService.js';
 import { getHolidays } from '../services/eventService.js';
+import { sendEmail } from '../services/emailService.js';
+import { getAllUsers } from '../services/userService.js';
 
 const normalizeEvent = (eventData = {}, id = null) => {
   return {
@@ -114,7 +116,7 @@ export const createEvent = async (req, res) => {
     await eventRef.set(event);
     console.log('✅ EVENT CREATED:', eventRef.id);
 
-    // Notify attendees
+    // Notify attendees in-app
     if (attendees.length > 0) {
       await sendNotificationToUsers(attendees, {
         message: `New event created: ${title} on ${date}`,
@@ -122,6 +124,27 @@ export const createEvent = async (req, res) => {
         targetId: eventRef.id,
         targetType: 'event'
       });
+    }
+
+    // Send email notifications to all users
+    try {
+      const users = await getAllUsers();
+      const emails = users.map(u => u.email).filter(e => !!e);
+      
+      if (emails.length > 0) {
+        await sendEmail(
+          emails,
+          `New Event Created: ${title}`,
+          `A new event has been created: ${title}\nDate: ${date}\nDescription: ${description || 'No description provided.'}`,
+          `<h3>New Event Created</h3>
+           <p><strong>Title:</strong> ${title}</p>
+           <p><strong>Date:</strong> ${date}</p>
+           <p><strong>Description:</strong> ${description || 'No description provided.'}</p>
+           <p>Log in to Lineup to view more details.</p>`
+        );
+      }
+    } catch (notifError) {
+      console.error("❌ EVENT EMAIL NOTIFICATION ERROR:", notifError.message);
     }
 
     res.status(201).json({ data: event, status: 201 });

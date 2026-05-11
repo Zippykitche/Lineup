@@ -74,9 +74,11 @@ export function EventsPage() {
     return users.find((u) => u.id === userId)?.fullName || 'Unknown';
   };
 
-  const sortedEvents = [...filteredEvents].sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-  );
+  const sortedEvents = [...filteredEvents].sort((a, b) => {
+    const dateTimeA = new Date(`${a.date}T${a.startTime || '00:00'}`).getTime();
+    const dateTimeB = new Date(`${b.date}T${b.startTime || '00:00'}`).getTime();
+    return dateTimeB - dateTimeA;
+  });
 
   return (
     <div className="space-y-6">
