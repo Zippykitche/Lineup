@@ -35,6 +35,17 @@ interface AppContextType {
   refreshData: () => Promise<void>;
 }
 
+const normalizeDate = (val: string | undefined) => (val || '').split('T')[0];
+const padTime = (t: string | undefined) => {
+  if (!t) return '00:00';
+  // Handle cases where time might be '9:00' instead of '09:00'
+  if (t.length === 4 && t.includes(':')) return '0' + t;
+  // Ensure consistent length for sorting, e.g., '9:00' -> '09:00'
+  if (t.length === 5 && t.includes(':')) return t;
+  // Fallback for unexpected formats, treat as start of day
+  return '00:00';
+};
+
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
@@ -78,13 +89,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
             return acc;
           }, new Map<string, Event>()).values()
         );
-
-        const normalizeDate = (val: string | undefined) => (val || '').split('T')[0];
-        const padTime = (t: string | undefined) => {
-          if (!t) return '00:00';
-          if (t.length === 4 && t.includes(':')) return '0' + t;
-          return t;
-        };
 
         uniqueEvents.sort((a, b) => {
           const keyA = `${normalizeDate(a.date)}T${padTime(a.startTime)}`;
