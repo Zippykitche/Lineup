@@ -79,6 +79,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
           }, new Map<string, Event>()).values()
         );
 
+        const normalizeDate = (val: string | undefined) => (val || '').split('T')[0];
+        const padTime = (t: string | undefined) => {
+          if (!t) return '00:00';
+          if (t.length === 4 && t.includes(':')) return '0' + t;
+          return t;
+        };
+
         uniqueEvents.sort((a, b) => {
           const keyA = `${normalizeDate(a.date)}T${padTime(a.startTime)}`;
           const keyB = `${normalizeDate(b.date)}T${padTime(b.startTime)}`;

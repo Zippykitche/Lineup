@@ -137,37 +137,26 @@ export const createEvent = async (req, res) => {
   }
 };
 
-/**
- * Get public events (e.g., holidays).
- * Merges events from Firestore marked as isPublic with holidays from the Nager.Date API.
- */
 export const getPublicEvents = async (req, res) => {
   try {
     const snapshot = await db.collection('events')
       .where('isPublic', '==', true)
       .get();
-    const firestoreEvents = snapshot.docs.map(doc => normalizeEvent(doc.data(), doc.id));
-    
-    const year = new Date().getFullYear();
-    const holidays = await getHolidays(year);
-    
-    const firestoreEventKeys = new Set(firestoreEvents.map(e => `${e.title}-${e.date}`));
-    
-    const mergedEvents = [...firestoreEvents];
-    holidays.forEach(h => {
-      if (!firestoreEventKeys.has(`${h.title}-${h.date}`)) {
-        mergedEvents.push(normalizeEvent(h));
-      }
-    });
+    const events = snapshot.docs.map(doc => normalizeEvent(doc.data(), doc.id));
 
-    // Sort merged events: chronological order (earliest/upcoming first)
-    mergedEvents.sort((a, b) => {
-      const dateTimeA = `${a.date}T${a.startTime || '00:00'}`;
-      const dateTimeB = `${b.date}T${b.startTime || '00:00'}`;
-      return dateTimeA.localeCompare(dateTimeB);
-    });
+    // Sort: Upcoming (Today/Future) Ascending, then Past Descending
+    const today = new Date().toISOString().split('T')[0];
+    const upcoming = events
+      .filter(e => e.date >= today)
+      .sort((a, b) => `${a.date}T${a.startTime}`.localeCompare(`${b.date}T${b.startTime}`));
 
-    res.json({ data: mergedEvents, status: 200 });
+    const past = events
+      .filter(e => e.date < today)
+      .sort((a, b) => `${b.date}T${b.startTime}`.localeCompare(`${a.date}T${a.startTime}`));
+
+    const sortedEvents = [...upcoming, ...past];
+
+    res.json({ data: sortedEvents, status: 200 });
   } catch (err) {
     console.error('Get public events error:', err);
     res.status(500).json({ message: 'Server error' });

@@ -135,9 +135,14 @@ export const updateTaskHandler = async (req, res) => {
       return res.status(404).json({ message: 'Task not found' });
     }
 
+    const updateData = { ...req.body };
+    if (req.body.assigneeIds || req.body.assignees) {
+      updateData.assigneeIds = req.body.assigneeIds || req.body.assignees;
+    }
+
     // If user is an assignee, they can ONLY update the status
     if (req.user.role === 'assignee') {
-      const updateKeys = Object.keys(req.body);
+      const updateKeys = Object.keys(updateData);
       const isOnlyStatus = updateKeys.length === 1 && updateKeys[0] === 'status';
 
       if (!isOnlyStatus) {
@@ -150,7 +155,7 @@ export const updateTaskHandler = async (req, res) => {
       }
     }
 
-    const result = await updateTask(id, req.body);
+    const result = await updateTask(id, updateData);
 
     if (!result) {
       return res.status(500).json({ message: 'Failed to update task' });
