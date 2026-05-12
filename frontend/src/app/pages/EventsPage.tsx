@@ -45,19 +45,18 @@ export function EventsPage() {
     return matchesSearch && matchesStatus && matchesPriority;
   });
 
-  // SORT EVENTS FROM MOST RECENT TO OLDEST
-  const sortedEvents = [...filteredEvents].sort((a, b) => {
-  const getEventTime = (event: Event) => {
-    const date = event.date?.split('T')[0];
-
-    if (!date) return 0;
-
-    const time = event.startTime || '00:00'; // Default to '00:00' if startTime is missing
-    return new Date(`${date}T${time}`).getTime();
+  // Helper to convert event date/time to timestamp for sorting
+  const getEventTimestamp = (event: Event) => {
+    const datePart = event.date?.split('T')[0];
+    if (!datePart) return 0;
+    const timePart = event.startTime || '00:00';
+    return new Date(`${datePart}T${timePart}`).getTime();
   };
 
-  return getEventTime(b) - getEventTime(a);
-});
+  // SORT EVENTS FROM MOST RECENT TO OLDEST
+  const sortedEvents = [...filteredEvents].sort((a, b) => {
+    return getEventTimestamp(b) - getEventTimestamp(a);
+  });
 
   const getEventStatusColor = (status: EventStatus) => {
     switch (status) {
