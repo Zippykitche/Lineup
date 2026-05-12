@@ -32,6 +32,9 @@ export function EditEventForm({ event, onClose, onSave }: Props) {
   const [description, setDescription] = useState(event.description);
   const [category, setCategory] = useState(event.category || 'General');
   const [selectedAttendees, setSelectedAttendees] = useState<string[]>(event.attendeeIds || []);
+  const [status, setStatus] = useState<EventStatus>(event.status || 'Planned');
+  const [priority, setPriority] = useState(event.priority || 'medium');
+  const [outputType, setOutputType] = useState(event.outputType || 'TV');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,6 +60,9 @@ export function EditEventForm({ event, onClose, onSave }: Props) {
         description,
         category,
         attendeeIds: selectedAttendees,
+        status,
+        priority,
+        outputType,
       });
       toast.success('Event updated successfully');
       onSave();
@@ -74,7 +80,7 @@ export function EditEventForm({ event, onClose, onSave }: Props) {
     );
   };
 
-  const assignableUsers = users.filter((user) => user.role !== 'super_admin');
+  const assignableUsers = users.filter((user) => !user.suspended);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -178,6 +184,52 @@ export function EditEventForm({ event, onClose, onSave }: Props) {
             <SelectItem value="Entertainment">Entertainment</SelectItem>
             <SelectItem value="Politics">Politics</SelectItem>
             <SelectItem value="Business">Business</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <Label>Status</Label>
+          <Select value={status} onValueChange={(v) => setStatus(v as EventStatus)} disabled={isSubmitting}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Planned">Planned</SelectItem>
+              <SelectItem value="In Progress">In Progress</SelectItem>
+              <SelectItem value="Done">Done</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <Label>Priority</Label>
+          <Select value={priority} onValueChange={setPriority} disabled={isSubmitting}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="urgent">Urgent</SelectItem>
+              <SelectItem value="high">High</SelectItem>
+              <SelectItem value="medium">Medium</SelectItem>
+              <SelectItem value="low">Low</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div>
+        <Label>Output Type</Label>
+        <Select value={outputType} onValueChange={setOutputType} disabled={isSubmitting}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="TV">TV</SelectItem>
+            <SelectItem value="Radio">Radio</SelectItem>
+            <SelectItem value="Social">Social</SelectItem>
+            <SelectItem value="Web">Web</SelectItem>
           </SelectContent>
         </Select>
       </div>

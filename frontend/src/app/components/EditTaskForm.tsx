@@ -4,6 +4,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
+import { Checkbox } from './ui/checkbox';
 import {
   Select,
   SelectContent,
@@ -24,13 +25,19 @@ export function EditTaskForm({ task, onClose, onSave }: EditTaskFormProps) {
   const { users, events, updateTask } = useApp();
   const [title, setTitle] = useState(task.title);
   const [dueDate, setDueDate] = useState(task.dueDate);
-  const [assigneeId, setAssigneeId] = useState(task.assigneeId);
+  const [selectedAssignees, setSelectedAssignees] = useState<string[]>(task.assigneeIds || []);
   const [status, setStatus] = useState<TaskStatus>(task.status);
   const [priority, setPriority] = useState<TaskPriority>(task.priority);
   const [description, setDescription] = useState(task.description || '');
   const [selectedEventId, setSelectedEventId] = useState<string>(task.eventId || '');
   const INDEPENDENT_TASK_EVENT_ID = 'none';
   const [isLoading, setIsLoading] = useState(false);
+
+  const toggleAssignee = (userId: string) => {
+    setSelectedAssignees((prev) =>
+      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]
+    );
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +47,7 @@ export function EditTaskForm({ task, onClose, onSave }: EditTaskFormProps) {
       await updateTask(task.id, {
         title,
         dueDate,
-        assigneeId,
+        assigneeIds: selectedAssignees,
         status,
         priority,
         description,
@@ -60,7 +67,7 @@ export function EditTaskForm({ task, onClose, onSave }: EditTaskFormProps) {
     }
   };
 
-  const assignableUsers = users.filter((u) => u.role === 'assignee');
+  const assignableUsers = users.filter((u) => !u.suspended);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 py-2">
@@ -74,33 +81,44 @@ export function EditTaskForm({ task, onClose, onSave }: EditTaskFormProps) {
         />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="edit-dueDate">Due Date *</Label>
-          <Input
-            id="edit-dueDate"
-            type="date"
-            value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
-            required
-          />
-        </div>
+      <div className="space-y-2">
+        <Label htmlFor="edit-dueDate">Due Date *</Label>
+        <Input
+          id="edit-dueDate"
+          type="date"
+          value={dueDate}
+          onChange={(e) => setDueDate(e.target.value)}
+          required
+        />
+      </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="edit-assignee">Assign To *</Label>
-          <Select value={assigneeId} onValueChange={setAssigneeId} required>
-            <SelectTrigger id="edit-assignee">
-              <SelectValue placeholder="Select assignee" />
-            </SelectTrigger>
-            <SelectContent>
-              {assignableUsers.map((user) => (
-                <SelectItem key={user.id} value={user.id}>
-                  {user.fullName}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      <div className="space-y-2">
+        <Label>Assign Team Members *</Label>
+        <div className="border rounded-lg p-3 space-y-2 max-h-48 overflow-y-auto bg-gray-50/50 dark:bg-gray-800/50">
+          {assignableUsers.length > 0 ? (
+            assignableUsers.map((user) => (
+              <div key={user.id} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`edit-task-assignee-${user.id}`}
+                  checked={selectedAssignees.includes(user.id)}
+                  onCheckedChange={() => toggleAssignee(user.id)}
+                  disabled={isLoading}
+                />
+                <label
+                  htmlFor={`edit-task-assignee-${user.id}`}
+                  className="flex-1 cursor-pointer text-sm font-normal"
+                >
+                  {user.fullName} ({user.role})
+                </label>
+              </div>
+            ))
+          ) : (
+            <p className="text-sm text-gray-500">No available assignees</p>
+          )}
         </div>
+        {selectedAssignees.length > 0 && (
+          <p className="text-xs text-gray-500">{selectedAssignees.length} assignee(s) selected</p>
+        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

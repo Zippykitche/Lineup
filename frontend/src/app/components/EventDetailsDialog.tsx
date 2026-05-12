@@ -58,6 +58,18 @@ export function EventDetailsDialog({
     }
   };
 
+  const getPriorityColor = (priority: string) => {
+    switch (priority?.toLowerCase()) {
+      case 'urgent':
+      case 'high':
+        return 'bg-red-100 text-red-800';
+      case 'medium':
+        return 'bg-yellow-100 text-yellow-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   const getCategoryColor = (category: string) => {
     switch (category) {
       case 'News':
@@ -121,6 +133,7 @@ export function EventDetailsDialog({
               <div className="flex items-center gap-3 flex-wrap">
                 <Badge variant="outline">{event.outputType}</Badge>
                 <Badge className={getEventStatusColor(status)}>{status}</Badge>
+                <Badge className={getPriorityColor(event.priority)}>{event.priority || 'Medium'} Priority</Badge>
                 <Badge variant="outline" className={getCategoryColor(event.category || 'General')}>
                   {event.category || 'General'}
                 </Badge>
