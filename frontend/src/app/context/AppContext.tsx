@@ -80,15 +80,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         );
 
         uniqueEvents.sort((a, b) => {
-          const normalizeDate = (val: string | undefined) => (val || '').split('T')[0];
-          const padTime = (t: string | undefined) => {
-            if (!t) return '00:00';
-            if (t.length === 4 && t.includes(':')) return '0' + t;
-            return t;
-          };
           const keyA = `${normalizeDate(a.date)}T${padTime(a.startTime)}`;
           const keyB = `${normalizeDate(b.date)}T${padTime(b.startTime)}`;
-          return keyB.localeCompare(keyA);
+          return keyA.localeCompare(keyB);
         });
 
         setEvents(uniqueEvents);
