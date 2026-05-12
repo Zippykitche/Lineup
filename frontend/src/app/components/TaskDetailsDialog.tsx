@@ -116,7 +116,7 @@ export function TaskDetailsDialog({ task, open, onOpenChange }: TaskDetailsDialo
                 <Badge className={getPriorityColor(task.priority)}>{task.priority} Priority</Badge>
               </div>
 
-              <div className="flex items-center gap-2 text-gray-700">
+              <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                 <Calendar className="w-5 h-5" />
                 <span>Due: {format(parseISO(task.dueDate), 'EEEE, MMMM d, yyyy')}</span>
               </div>
@@ -124,7 +124,7 @@ export function TaskDetailsDialog({ task, open, onOpenChange }: TaskDetailsDialo
               {task.description && (
                 <div className="pt-2">
                   <h4 className="font-medium mb-2">Description</h4>
-                  <p className="text-gray-700">{task.description}</p>
+                  <p className="text-gray-700 dark:text-gray-300">{task.description}</p>
                 </div>
               )}
 
@@ -137,16 +137,16 @@ export function TaskDetailsDialog({ task, open, onOpenChange }: TaskDetailsDialo
                     const isPast = linkedEvent && linkedEvent.date < today;
 
                     return linkedEvent ? (
-                      <div className="border rounded-lg p-3 bg-blue-50 min-w-0">
+                      <div className="border rounded-lg p-3 bg-blue-50 dark:bg-blue-900/20 min-w-0">
                         <div className="flex items-center justify-between gap-2">
-                          <div className="font-medium text-blue-900 truncate">{linkedEvent.title}</div>
+                          <div className="font-medium text-blue-900 dark:text-blue-100 truncate">{linkedEvent.title}</div>
                           {isPast && (
                             <Badge variant="secondary" className="bg-gray-200 text-gray-700 text-[10px]">
                               Past Event
                             </Badge>
                           )}
                         </div>
-                        <div className="text-sm text-blue-700 mt-1 break-words">
+                        <div className="text-sm text-blue-700 dark:text-blue-300 mt-1 break-words">
                           {format(parseISO(linkedEvent.date), 'MMM d, yyyy')} • {linkedEvent.startTime} - {linkedEvent.endTime}
                         </div>
                         <Badge variant="outline" className="mt-2 text-xs inline-block">
@@ -176,14 +176,14 @@ export function TaskDetailsDialog({ task, open, onOpenChange }: TaskDetailsDialo
                       ).slice(0, 3); // Limit to 3 events
 
                       return (
-                        <div key={assignee.id} className="border rounded-lg p-3 min-w-0">
+                        <div key={assignee.id} className="border rounded-lg p-3 min-w-0 bg-card">
                           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-2">
-                            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                              <User className="w-4 h-4 text-blue-600" />
+                            <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center flex-shrink-0">
+                              <User className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="font-medium truncate">{assignee.fullName}</p>
-                              <p className="text-sm text-gray-600 truncate">{assignee.workEmail}</p>
+                              <p className="text-sm text-gray-600 dark:text-gray-400 truncate">{assignee.workEmail}</p>
                             </div>
                             <Badge variant="outline" className="capitalize flex-shrink-0">
                               {assignee.role.replace('_', ' ')}
@@ -192,10 +192,10 @@ export function TaskDetailsDialog({ task, open, onOpenChange }: TaskDetailsDialo
                           
                           {assigneeEvents.length > 0 && (
                             <div className="mt-3 pt-3 border-t">
-                              <p className="text-sm font-medium text-gray-700 mb-2">Upcoming Events:</p>
+                              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Upcoming Events:</p>
                               <div className="space-y-1">
                                 {assigneeEvents.map((event) => (
-                                  <div key={event.id} className="text-xs text-gray-600 bg-gray-50 rounded px-2 py-1">
+                                  <div key={event.id} className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded px-2 py-1">
                                     <span className="font-medium">{event.title}</span>
                                     <span className="ml-2">
                                       {format(parseISO(event.date), 'MMM d')} • {event.startTime}
@@ -213,7 +213,7 @@ export function TaskDetailsDialog({ task, open, onOpenChange }: TaskDetailsDialo
               )}
 
               {creator && (
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-gray-600 dark:text-gray-400">
                   {isAssignee ? 'Assigned by' : 'Created by'}: {creator.fullName}
                 </div>
               )}
@@ -239,7 +239,7 @@ export function TaskDetailsDialog({ task, open, onOpenChange }: TaskDetailsDialo
                 </div>
               )}
 
-              <div className="sticky bottom-0 bg-white flex flex-wrap justify-end gap-2 pt-4 border-t">
+              <div className="sticky bottom-0 bg-white dark:bg-background flex flex-wrap justify-end gap-2 pt-4 border-t">
                 {canEditTask && (
                   <Button variant="outline" onClick={() => setIsEditing(true)}>
                     Edit Task

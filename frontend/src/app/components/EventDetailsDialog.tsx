@@ -126,12 +126,12 @@ export function EventDetailsDialog({
                 </Badge>
               </div>
 
-              <div className="flex items-center gap-2 text-gray-700">
+              <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                 <Calendar className="w-5 h-5" />
                 <span>{format(parseISO(event.date), 'EEEE, MMMM d, yyyy')}</span>
               </div>
 
-              <div className="flex items-center gap-2 text-gray-700">
+              <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                 <Clock className="w-5 h-5" />
                 <span>
                   {event.startTime} - {event.endTime}
@@ -141,7 +141,7 @@ export function EventDetailsDialog({
               {event.description && (
                 <div className="pt-2">
                   <h4 className="font-medium mb-2">Description</h4>
-                  <p className="text-gray-700">{event.description}</p>
+                  <p className="text-gray-700 dark:text-gray-300">{event.description}</p>
                 </div>
               )}
 
@@ -176,13 +176,13 @@ export function EventDetailsDialog({
                       key={attendee.id}
                       className="flex items-center gap-3 p-2 border rounded-lg"
                     >
-                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                        <User className="w-5 h-5 text-blue-600" />
+                      <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center">
+                        <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                       </div>
 
                       <div className="flex-1">
                         <p className="font-medium">{attendee.fullName}</p>
-                        <p className="text-sm text-gray-600">{attendee.workEmail}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{attendee.workEmail}</p>
                       </div>
 
                       <Badge variant="outline" className="capitalize">
@@ -194,12 +194,12 @@ export function EventDetailsDialog({
               </div>
 
               {creator && (
-                <div className="pt-2 text-sm text-gray-600">
+                <div className="pt-2 text-sm text-gray-600 dark:text-gray-400">
                   Created by: {creator.fullName}
                 </div>
               )}
 
-              <div className="sticky bottom-0 bg-white pt-4 border-t flex justify-end gap-2">
+              <div className="sticky bottom-0 bg-white dark:bg-background pt-4 border-t flex justify-end gap-2">
                 {(isSuperAdmin || isEditor) && (
                   <Button variant="outline" onClick={() => setIsEditing(true)}>
                     Edit Event

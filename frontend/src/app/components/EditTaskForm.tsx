@@ -160,7 +160,7 @@ export function EditTaskForm({ task, onClose, onSave }: EditTaskFormProps) {
         </Select>
       </div>
 
-      <div className="flex justify-end gap-2 pt-4 border-t sticky bottom-0 bg-white">
+      <div className="flex justify-end gap-2 pt-4 border-t sticky bottom-0 bg-white dark:bg-background">
         <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
           Cancel
         </Button>

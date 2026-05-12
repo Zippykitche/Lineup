@@ -138,7 +138,7 @@ export function EditEventForm({ event, onClose, onSave }: Props) {
 
       <div className="space-y-2">
         <Label>Assign Team Members</Label>
-        <div className="border rounded-lg p-4 space-y-3 max-h-48 overflow-y-auto bg-gray-50/50">
+        <div className="border rounded-lg p-4 space-y-3 max-h-48 overflow-y-auto bg-gray-50/50 dark:bg-gray-800/50">
           {assignableUsers.map((user) => (
             <div key={user.id} className="flex items-center space-x-2">
               <Checkbox
@@ -152,7 +152,7 @@ export function EditEventForm({ event, onClose, onSave }: Props) {
                 className="flex-1 cursor-pointer text-sm"
               >
                 <p className="font-medium">{user.fullName}</p>
-                <p className="text-xs text-gray-600">
+                <p className="text-xs text-gray-600 dark:text-gray-400">
                   {user.workEmail} • {user.role.replace('_', ' ')}
                 </p>
               </label>
