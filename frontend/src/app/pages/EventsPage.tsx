@@ -52,18 +52,9 @@ export function EventsPage() {
 
     if (!date) return 0;
 
-    const time = event.startTime || '00:00';
-
+    const time = event.startTime || '00:00'; // Default to '00:00' if startTime is missing
     return new Date(`${date}T${time}`).getTime();
   };
-
-  console.log(
-  sortedEvents.map((event) => ({
-    title: event.title,
-    date: event.date,
-    startTime: event.startTime,
-  }))
-);
 
   return getEventTime(b) - getEventTime(a);
 });
