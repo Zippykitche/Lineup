@@ -287,8 +287,18 @@ export const deleteEvent = async (req, res) => {
   const { id } = req.params;
 
   try {
+    // Check if event is a public holiday
+    const eventDoc = await db.collection('events').doc(id).get();
+    if (!eventDoc.exists) {
+      return res.status(404).json({ message: 'Event not found' });
+    }
+
+    if (eventDoc.data().type === 'holiday') {
+      return res.status(403).json({ message: 'Public holidays cannot be deleted' });
+    }
+
     await db.collection('events').doc(id).delete();
-    res.json({ data: null, message: 'Event deleted successfully', status: 200 });
+    res.json({ message: 'Event deleted successfully', status: 200 });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
