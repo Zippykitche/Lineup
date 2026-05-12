@@ -80,14 +80,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
         );
 
         uniqueEvents.sort((a, b) => {
-          const normalize = (val: string | undefined) => (val || '').split('T')[0];
-          const pad = (t: string | undefined) => {
+          const normalizeDate = (val: string | undefined) => (val || '').split('T')[0];
+          const padTime = (t: string | undefined) => {
             if (!t) return '00:00';
             if (t.length === 4 && t.includes(':')) return '0' + t;
             return t;
           };
-          const keyA = `${normalize(a.date)}T${pad(a.startTime)}`;
-          const keyB = `${normalize(b.date)}T${pad(b.startTime)}`;
+          const keyA = `${normalizeDate(a.date)}T${padTime(a.startTime)}`;
+          const keyB = `${normalizeDate(b.date)}T${padTime(b.startTime)}`;
           return keyB.localeCompare(keyA);
         });
 

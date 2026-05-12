@@ -1,7 +1,7 @@
 import { db } from '../config/firebase.js';
 import { sendNotificationToUsers } from '../services/notificationService.js';
 import { getHolidays } from '../services/eventService.js';
-import { sendEventNotificationEmail } from '../services/emailService.js';
+import { sendEventNotification } from '../services/emailService.js';
 import { sendEmail } from '../services/emailService.js';
 import { getAllUsers } from '../services/userService.js';
 
@@ -127,7 +127,7 @@ export const createEvent = async (req, res) => {
 
     // Send email notifications to attendees
     if (attendees.length > 0) {
-      await sendEventNotificationEmail(event, attendees);
+      await sendEventNotification(event, attendees);
     }
 
     res.status(201).json({ data: event, status: 201 });
