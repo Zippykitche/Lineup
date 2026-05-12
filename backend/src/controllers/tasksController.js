@@ -7,7 +7,7 @@ import {
   getUserTasks,
 } from '../services/taskService.js';
 import { createNotification } from '../services/notificationService.js';
-import { sendTaskNotificationEmail } from '../services/emailService.js';
+import { sendTaskNotification } from '../services/emailService.js';
 
 // Create task - Editor and Super Admin
 export const createTaskHandler = async (req, res) => {
@@ -46,7 +46,7 @@ export const createTaskHandler = async (req, res) => {
     }
 
     // Send email notifications to assignees
-    await sendTaskNotificationEmail(result, assigneeIds);
+    await sendTaskNotification(result, assigneeIds);
 
     res.status(201).json({ data: result, message: 'Task created successfully', status: 201 });
   } catch (err) {
