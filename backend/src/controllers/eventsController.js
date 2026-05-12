@@ -15,6 +15,10 @@ const normalizeEvent = (eventData = {}, id = null) => {
     date = date.split('T')[0];
   }
 
+  const today = new Date().toISOString().split('T')[0];
+  const eventDate = date || '';
+  const isPast = eventDate < today;
+
   return {
     id: id || eventData.id || null,
     title: eventData.title || null,
@@ -30,6 +34,7 @@ const normalizeEvent = (eventData = {}, id = null) => {
     category: eventData.category || 'General',
     priority: eventData.priority || 'medium',
     isPublic: eventData.isPublic || eventData.is_public || false,
+    isPast,
     createdAt: eventData.createdAt || eventData.created_at || null,
     updatedAt: eventData.updatedAt || eventData.updated_at || null,
   };
@@ -173,12 +178,23 @@ export const getPublicEvents = async (req, res) => {
 export const getAllEvents = async (req, res) => {
   try {
     const snapshot = await db.collection('events')
-      .orderBy('date')
-      .orderBy('startTime')
       .get();
+      
     const events = snapshot.docs.map(doc => normalizeEvent(doc.data(), doc.id));
     
-    res.json({ data: events, status: 200 });
+    // Sort: Upcoming (Today/Future) Ascending, then Past Descending
+    const today = new Date().toISOString().split('T')[0];
+    const upcoming = events
+      .filter(e => e.date >= today)
+      .sort((a, b) => `${a.date}T${a.startTime}`.localeCompare(`${b.date}T${b.startTime}`));
+    
+    const past = events
+      .filter(e => e.date < today)
+      .sort((a, b) => `${b.date}T${b.startTime}`.localeCompare(`${a.date}T${a.startTime}`));
+
+    const sortedEvents = [...upcoming, ...past];
+    
+    res.json({ data: sortedEvents, status: 200 });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
@@ -190,13 +206,23 @@ export const getMyEvents = async (req, res) => {
   try {
     const snapshot = await db.collection('events')
       .where('attendeeIds', 'array-contains', req.user.uid)
-      .orderBy('date')
-      .orderBy('startTime')
       .get();
 
     const events = snapshot.docs.map(doc => normalizeEvent(doc.data(), doc.id));
     
-    res.json({ data: events, status: 200 });
+    // Sort: Upcoming (Today/Future) Ascending, then Past Descending
+    const today = new Date().toISOString().split('T')[0];
+    const upcoming = events
+      .filter(e => e.date >= today)
+      .sort((a, b) => `${a.date}T${a.startTime}`.localeCompare(`${b.date}T${b.startTime}`));
+    
+    const past = events
+      .filter(e => e.date < today)
+      .sort((a, b) => `${b.date}T${b.startTime}`.localeCompare(`${a.date}T${a.startTime}`));
+
+    const sortedEvents = [...upcoming, ...past];
+
+    res.json({ data: sortedEvents, status: 200 });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });

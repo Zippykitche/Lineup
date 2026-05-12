@@ -133,9 +133,19 @@ export function TaskDetailsDialog({ task, open, onOpenChange }: TaskDetailsDialo
                   <h4 className="font-medium mb-2">Linked Event</h4>
                   {(() => {
                     const linkedEvent = events.find(e => e.id === task.eventId);
+                    const today = new Date().toISOString().split('T')[0];
+                    const isPast = linkedEvent && linkedEvent.date < today;
+
                     return linkedEvent ? (
                       <div className="border rounded-lg p-3 bg-blue-50 min-w-0">
-                        <div className="font-medium text-blue-900 truncate">{linkedEvent.title}</div>
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="font-medium text-blue-900 truncate">{linkedEvent.title}</div>
+                          {isPast && (
+                            <Badge variant="secondary" className="bg-gray-200 text-gray-700 text-[10px]">
+                              Past Event
+                            </Badge>
+                          )}
+                        </div>
                         <div className="text-sm text-blue-700 mt-1 break-words">
                           {format(parseISO(linkedEvent.date), 'MMM d, yyyy')} • {linkedEvent.startTime} - {linkedEvent.endTime}
                         </div>
