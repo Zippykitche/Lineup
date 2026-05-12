@@ -53,9 +53,23 @@ export function EventsPage() {
     return new Date(`${datePart}T${timePart}`).getTime();
   };
 
-  // SORT EVENTS FROM MOST RECENT TO OLDEST
+  const todayStart = new Date().setHours(0, 0, 0, 0);
+
+  // SORT EVENTS: Upcoming first (closest to today), then Past events at the bottom
   const sortedEvents = [...filteredEvents].sort((a, b) => {
-    return getEventTimestamp(b) - getEventTimestamp(a);
+    const tA = getEventTimestamp(a);
+    const tB = getEventTimestamp(b);
+
+    const isPastA = tA < todayStart;
+    const isPastB = tB < todayStart;
+
+    // Future/Today events before past events
+    if (!isPastA && isPastB) return -1;
+    if (isPastA && !isPastB) return 1;
+
+    // If both are future: sort ascending (closest first)
+    // If both are past: sort descending (most recent past first)
+    return isPastA ? tB - tA : tA - tB;
   });
 
   const getEventStatusColor = (status: EventStatus) => {
@@ -192,6 +206,8 @@ export function EventsPage() {
                   event.type === 'holiday' &&
                   event.createdBy === 'system';
 
+                const isPast = getEventTimestamp(event) < todayStart;
+
                 return (
                   <div
                     key={event.id}
@@ -220,6 +236,12 @@ export function EventsPage() {
                         >
                           {event.status}
                         </Badge>
+
+                        {isPast && (
+                          <Badge variant="secondary" className="bg-gray-100 text-gray-600 border-gray-200 uppercase text-[10px]">
+                            Past Event
+                          </Badge>
+                        )}
 
                         {event.category && (
                           <Badge
