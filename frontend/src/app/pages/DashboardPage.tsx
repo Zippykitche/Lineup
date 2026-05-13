@@ -180,7 +180,7 @@ export function DashboardPage() {
                 {todaysMeetings.map((event) => (
                   <div
                     key={event.id}
-                    className="p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                    className="p-3 border rounded-lg bg-card shadow-sm hover:shadow-md transition-all cursor-pointer"
                     onClick={() => navigate('/calendar')}
                   >
                     <p className="font-medium">{event.title}</p>
@@ -211,7 +211,7 @@ export function DashboardPage() {
                 {upcomingDeadlines.map((task) => (
                   <div
                     key={task.id}
-                    className="p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                    className="p-3 border rounded-lg bg-card shadow-sm hover:shadow-md transition-all cursor-pointer"
                     onClick={() => navigate('/tasks')}
                   >
                     <div className="flex items-start justify-between gap-2">

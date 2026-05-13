@@ -243,7 +243,7 @@ export function TeamPage() {
               return (
                 <div
                   key={user.id}
-                  className="p-5 border rounded-lg hover:shadow-md transition-shadow bg-card"
+                  className="p-5 border rounded-lg shadow-sm hover:shadow-md transition-all bg-card"
                 >
                   <div className="flex items-start gap-4">
                     <Avatar className="w-16 h-16">

@@ -200,7 +200,7 @@ export function EventsPage() {
                 return (
                   <div
                     key={event.id}
-                    className="flex flex-col md:flex-row md:items-center justify-between p-4 border rounded-lg hover:shadow-md transition-all cursor-pointer bg-card gap-4"
+                    className="flex flex-col md:flex-row md:items-center justify-between p-4 border rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer bg-card gap-4"
                     onClick={() => setSelectedEvent(event)}
                   >
                     <div className="flex-1 min-w-0">

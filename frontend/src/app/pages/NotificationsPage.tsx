@@ -44,8 +44,8 @@ export function NotificationsPage() {
   const renderNotification = (notification: Notification, isUnread: boolean) => (
     <div
       key={notification.id}
-      className={`p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer ${
-        isUnread ? 'bg-blue-500/10 border-blue-500/20 shadow-sm' : 'bg-card'
+      className={`p-4 border rounded-lg hover:shadow-md transition-all cursor-pointer ${
+        isUnread ? 'bg-blue-500/10 border-blue-500/20 shadow-sm' : 'bg-card shadow-sm'
       }`}
       onClick={() => setSelectedNotification(notification)}
     >
@@ -108,7 +108,7 @@ export function NotificationsPage() {
                 <span className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></span>
                 Unread
               </h3>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {unreadNotifications.map((notification) =>
                   renderNotification(notification, true)
                 )}
@@ -122,7 +122,7 @@ export function NotificationsPage() {
               <h3 className="font-semibold mb-3 text-muted-foreground">
                 {unreadNotifications.length > 0 ? 'Previously Read' : 'All Notifications'}
               </h3>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {readNotifications.map((notification) => renderNotification(notification, false))}
               </div>
             </div>

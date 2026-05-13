@@ -87,7 +87,7 @@ export function TasksPage() {
         {items.map((task) => (
           <div
             key={task.id}
-            className={`p-4 border rounded-lg hover:shadow-md transition-shadow cursor-pointer bg-card ${
+            className={`p-4 border rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer bg-card ${
               status === 'Completed' ? 'opacity-75' : ''
             }`}
             onClick={() => setSelectedTask(task)}
