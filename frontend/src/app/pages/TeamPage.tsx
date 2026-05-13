@@ -209,7 +209,7 @@ export function TeamPage() {
                 {isSuperAdmin ? <Shield className="w-6 h-6" /> : <Users className="w-6 h-6" />}
                 {isSuperAdmin ? 'User Management' : 'Team Directory'}
               </CardTitle>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm text-muted-foreground mt-1">
                 {isSuperAdmin
                   ? 'Create and manage staff accounts, and assign roles'
                   : `${filteredUsers.length} team members`}
@@ -227,7 +227,7 @@ export function TeamPage() {
 
         <CardContent className="space-y-6">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Search by name, email, or department..."
               value={searchTerm}
@@ -243,7 +243,7 @@ export function TeamPage() {
               return (
                 <div
                   key={user.id}
-                  className="p-5 border rounded-lg hover:shadow-md transition-shadow bg-white"
+                  className="p-5 border rounded-lg hover:shadow-md transition-shadow bg-card"
                 >
                   <div className="flex items-start gap-4">
                     <Avatar className="w-16 h-16">
@@ -260,7 +260,7 @@ export function TeamPage() {
                       <div className="flex items-start justify-between gap-2 mb-2">
                         <div>
                           <h3 className="font-semibold text-lg">{user.fullName}</h3>
-                          <p className="text-sm text-gray-600">{user.department}</p>
+                          <p className="text-sm text-muted-foreground">{user.department}</p>
                         </div>
                         <Badge
                           variant={user.role === 'super_admin' ? 'default' : 'secondary'}
@@ -270,11 +270,11 @@ export function TeamPage() {
                       </div>
 
                       <div className="space-y-1.5 text-sm">
-                        <div className="flex items-center gap-2 text-gray-700">
+                        <div className="flex items-center gap-2 text-foreground/80">
                           <Mail className="w-4 h-4" />
                           <span className="truncate">{user.workEmail}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-gray-700">
+                        <div className="flex items-center gap-2 text-foreground/80">
                           <Phone className="w-4 h-4" />
                           <span>{user.phone || '—'}</span>
                         </div>
@@ -282,14 +282,14 @@ export function TeamPage() {
 
                       {user.role === 'assignee' && (
                         <div className="mt-3 pt-3 border-t">
-                          <p className="text-xs font-medium text-gray-600 mb-2">Work Summary</p>
+                          <p className="text-xs font-medium text-muted-foreground mb-2">Work Summary</p>
                           <div className="flex gap-4 text-xs">
                             <div>
-                              <span className="text-gray-600">Active Tasks: </span>
+                              <span className="text-muted-foreground">Active Tasks: </span>
                               <span className="font-semibold">{stats.activeTasks}</span>
                             </div>
                             <div>
-                              <span className="text-gray-600">Upcoming Events: </span>
+                              <span className="text-muted-foreground">Upcoming Events: </span>
                               <span className="font-semibold">{stats.upcomingEvents}</span>
                             </div>
                           </div>
@@ -297,7 +297,7 @@ export function TeamPage() {
                       )}
 
                       {user.suspended && (
-                        <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-700">
+                        <div className="mt-2 p-2 bg-destructive/10 border border-destructive/20 rounded text-xs text-destructive dark:text-red-400">
                           <Ban className="w-3 h-3 inline mr-1" />
                           This user has been suspended
                         </div>

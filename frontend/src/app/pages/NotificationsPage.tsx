@@ -44,8 +44,8 @@ export function NotificationsPage() {
   const renderNotification = (notification: Notification, isUnread: boolean) => (
     <div
       key={notification.id}
-      className={`p-4 border rounded-lg hover:bg-gray-50 transition-colors cursor-pointer ${
-        isUnread ? 'bg-blue-50 border-blue-200 shadow-sm' : 'bg-white'
+      className={`p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer ${
+        isUnread ? 'bg-blue-500/10 border-blue-500/20 shadow-sm' : 'bg-card'
       }`}
       onClick={() => setSelectedNotification(notification)}
     >
@@ -59,7 +59,7 @@ export function NotificationsPage() {
             {isUnread && <Badge className="bg-blue-600 shrink-0">New</Badge>}
           </div>
           <div className="flex items-center gap-3 mt-2">
-            <p className="text-xs text-gray-600">
+            <p className="text-xs text-muted-foreground">
               {format(parseISO(notification.createdAt), 'MMM d, yyyy h:mm a')}
             </p>
             {isUnread && (
@@ -88,7 +88,7 @@ export function NotificationsPage() {
                 <Bell className="w-6 h-6 text-blue-600" />
                 Notifications
               </CardTitle>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm text-muted-foreground mt-1">
                 {unreadNotifications.length} unread notification
                 {unreadNotifications.length !== 1 ? 's' : ''}
               </p>
@@ -104,7 +104,7 @@ export function NotificationsPage() {
           {/* Unread Notifications */}
           {unreadNotifications.length > 0 && (
             <div>
-              <h3 className="font-semibold mb-3 flex items-center gap-2 text-blue-900">
+              <h3 className="font-semibold mb-3 flex items-center gap-2 text-foreground/80">
                 <span className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></span>
                 Unread
               </h3>
@@ -119,7 +119,7 @@ export function NotificationsPage() {
           {/* Read Notifications */}
           {readNotifications.length > 0 && (
             <div>
-              <h3 className="font-semibold mb-3 text-gray-700">
+              <h3 className="font-semibold mb-3 text-muted-foreground">
                 {unreadNotifications.length > 0 ? 'Previously Read' : 'All Notifications'}
               </h3>
               <div className="space-y-2">
@@ -131,9 +131,9 @@ export function NotificationsPage() {
           {/* Empty State */}
           {userNotifications.length === 0 && (
             <div className="text-center py-12">
-              <Bell className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-600">No notifications yet</p>
-              <p className="text-sm text-gray-500 mt-1">
+              <Bell className="w-12 h-12 text-muted mx-auto mb-4" />
+              <p className="text-muted-foreground font-medium">No notifications yet</p>
+              <p className="text-sm text-muted-foreground mt-1">
                 You'll see updates about meetings and tasks here
               </p>
             </div>

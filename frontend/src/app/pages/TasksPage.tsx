@@ -87,7 +87,7 @@ export function TasksPage() {
         {items.map((task) => (
           <div
             key={task.id}
-            className={`p-4 border rounded-lg hover:shadow-md transition-shadow cursor-pointer bg-white ${
+            className={`p-4 border rounded-lg hover:shadow-md transition-shadow cursor-pointer bg-card ${
               status === 'Completed' ? 'opacity-75' : ''
             }`}
             onClick={() => setSelectedTask(task)}
@@ -99,7 +99,7 @@ export function TasksPage() {
               <Badge className={getPriorityColor(task.priority)}>{task.priority}</Badge>
             </div>
 
-            <div className="space-y-2 text-sm text-gray-600">
+            <div className="space-y-2 text-sm text-muted-foreground">
               <div>
                 <span className="font-medium">Due:</span>{' '}
                 {format(parseISO(task.dueDate), 'MMM d, yyyy')}
@@ -113,7 +113,7 @@ export function TasksPage() {
         ))}
 
         {items.length === 0 && (
-          <p className="text-sm text-gray-500 text-center py-4">No {title.toLowerCase()} tasks</p>
+          <p className="text-sm text-muted-foreground text-center py-4">No {title.toLowerCase()} tasks</p>
         )}
       </div>
     </div>
@@ -145,7 +145,7 @@ export function TasksPage() {
         <CardContent className="space-y-6">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Search tasks..."
                 value={searchTerm}

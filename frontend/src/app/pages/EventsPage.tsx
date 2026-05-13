@@ -129,7 +129,7 @@ export function EventsPage() {
           {/* FILTERS */}
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
 
               <Input
                 placeholder="Search events..."
@@ -178,14 +178,14 @@ export function EventsPage() {
           {/* EVENTS */}
           <div className="space-y-4">
             {sortedEvents.length === 0 ? (
-              <div className="text-center py-12 border rounded-lg bg-gray-50">
-                <CalendarIcon className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+              <div className="text-center py-12 border rounded-lg bg-muted/50">
+                <CalendarIcon className="w-12 h-12 text-muted mx-auto mb-4" />
 
-                <p className="text-gray-500 font-medium">
+                <p className="text-muted-foreground font-medium">
                   No events found
                 </p>
 
-                <p className="text-gray-400 text-sm">
+                <p className="text-muted-foreground/60 text-sm">
                   Try adjusting your filters or search term
                 </p>
               </div>
@@ -200,12 +200,12 @@ export function EventsPage() {
                 return (
                   <div
                     key={event.id}
-                    className="flex flex-col md:flex-row md:items-center justify-between p-4 border rounded-lg hover:shadow-md transition-all cursor-pointer bg-white gap-4"
+                    className="flex flex-col md:flex-row md:items-center justify-between p-4 border rounded-lg hover:shadow-md transition-all cursor-pointer bg-card gap-4"
                     onClick={() => setSelectedEvent(event)}
                   >
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <h4 className="font-semibold text-gray-900 truncate">
+                        <h4 className="font-semibold text-foreground truncate">
                           {event.title}
                         </h4>
 
@@ -227,7 +227,7 @@ export function EventsPage() {
                         </Badge>
 
                         {isPast && (
-                          <Badge variant="secondary" className="bg-gray-100 text-gray-600 border-gray-200 uppercase text-[10px]">
+                          <Badge variant="secondary" className="bg-muted text-muted-foreground border-border uppercase text-[10px]">
                             Past Event
                           </Badge>
                         )}
@@ -244,11 +244,11 @@ export function EventsPage() {
                         )}
                       </div>
 
-                      <p className="text-sm text-gray-600 line-clamp-1 mb-2">
+                      <p className="text-sm text-muted-foreground line-clamp-1 mb-2">
                         {event.description}
                       </p>
 
-                      <div className="flex items-center gap-4 text-xs text-gray-500">
+                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <CalendarIcon className="w-3 h-3" />
 
@@ -264,14 +264,14 @@ export function EventsPage() {
                       </div>
                     </div>
 
-                    <div className="flex flex-col items-end gap-1 text-xs text-gray-500 shrink-0">
+                    <div className="flex flex-col items-end gap-1 text-xs text-muted-foreground shrink-0">
                       <span>
                         {isSystemHoliday
                           ? 'Source'
                           : 'Created by'}
                       </span>
 
-                      <span className="font-medium text-gray-700">
+                      <span className="font-medium text-foreground">
                         {isSystemHoliday
                           ? 'Public Calendar'
                           : getCreatorName(event.createdBy)}
