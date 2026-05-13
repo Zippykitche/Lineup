@@ -53,24 +53,13 @@ export function EventsPage() {
     return new Date(`${datePart}T${timePart}`).getTime();
   };
 
-  const todayStart = new Date().setHours(0, 0, 0, 0);
-
-  // SORT EVENTS: Upcoming first (closest to today), then Past events at the bottom
+  // SORT EVENTS: Chronological ascending (earliest to latest)
+  // This ensures "upcoming" events are towards the top and "later" events show at the bottom.
   const sortedEvents = [...filteredEvents].sort((a, b) => {
-    const tA = getEventTimestamp(a);
-    const tB = getEventTimestamp(b);
-
-    const isPastA = tA < todayStart;
-    const isPastB = tB < todayStart;
-
-    // Future/Today events before past events
-    if (!isPastA && isPastB) return -1;
-    if (isPastA && !isPastB) return 1;
-
-    // If both are future: sort ascending (closest first)
-    // If both are past: sort descending (most recent past first)
-    return isPastA ? tB - tA : tA - tB;
+    return getEventTimestamp(a) - getEventTimestamp(b);
   });
+
+  const todayStart = new Date().setHours(0, 0, 0, 0);
 
   const getEventStatusColor = (status: EventStatus) => {
     switch (status) {
